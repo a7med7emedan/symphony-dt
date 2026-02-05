@@ -61,6 +61,9 @@ from symphony_dt.utils.subset import select_demo_patient_ids
 from symphony_dt.utils.subset_clinical import select_demo_patient_ids_clinical_best
 
 app = typer.Typer(add_completion=False)
+
+from symphony_dt.nuts_cli import app as nuts_app
+app.add_typer(nuts_app, name="nuts")
 console = Console()
 
 
