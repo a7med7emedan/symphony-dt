@@ -1,69 +1,155 @@
-# symphony-dt
+# SYMPHONY: Systematic Monitoring and Personalised Hybrid Optimised Neurological digital twin with clinic interpretability
 
-Production-grade, HPC-friendly implementation of the SYMPHONY clinic-updated digital twin pipeline for PPMI exportables.
+`symphony-dt` is a production-grade, reproducible, HPC-friendly Python package that generates **standardized SYMPHONY clinic-updated digital twin results** from **PPMI clinical data**.
 
-This repository supports:
-- local runs (`demo`, `full`)
-- HPC/Slurm sharded runs (`shard`) with deterministic sharding
-- cohort-level aggregation of shard outputs
-- schema validation + preprocessing reports + reproducibility artifacts
+The repository is designed for **reuse, large-scale execution, and validation** rather than demonstration. It supports deterministic execution locally and on HPC systems, with strict output schemas to ensure reproducibility and downstream compatibility.
 
-> Note: The repo includes both baseline forecast engines (LOCF) and optional NumPyro-based NUTS components for scaffold/conditioning/forecasting. Turn on the inference backend only after installing the `inference` extras.
+## Key capabilities
 
-## Install
+- Deterministic **demo** mode for fast validation
+- **Full-cohort** execution in a single run
+- **Shard-based execution** for HPC (Slurm arrays or local loops)
+- Shard-safe output writing with reproducible aggregation
+- Cohort-level aggregation into standardized result tables
+- Output **parity and schema validation**
+- Unit and integration testing via `pytest`
+- Example **GitLab CI** configuration
+
+> By default, the pipeline uses stable baseline forecasting engines (e.g. LOCF) to ensure robustness and scalability on HPC systems.  
+> Optional NumPyro/JAX-based NUTS components are provided as extras and can be integrated separately when required.
+
+---
+
+## Installation
+
+### Create and activate a virtual environment
 
 ```bash
-pip install -e .[dev]
+python -m venv .venv
+source .venv/bin/activate
+pip install -U pip
 ```
 
-Optional (NumPyro/JAX inference):
+### Install the package
+
 ```bash
-pip install -e .[dev,inference]
+pip install -e ".[dev]"
 ```
+
+### Optional inference extras (NumPyro / JAX)
+
+```bash
+pip install -e ".[dev,inference]"
+```
+
+
+---
 
 ## Inputs
 
-Set `io.input_dir` in `configs/config.demo.yaml` to the extracted `ppmi.zip` directory.
+The pipeline expects a directory of **processed CSV tables** (e.g. extracted from a `ppmi.zip` clinical data).  
+Configure the input location in `configs/config.demo.yaml`:
 
-## Run (demo)
+```yaml
+io:
+  input_dir: /path/to/preprocessed_unzipped
+```
+
+---
+
+## Run modes
+
+### Demo mode
 
 ```bash
 symphony-dt run --config configs/config.demo.yaml --mode demo
 ```
 
-Outputs:
-- `outputs/<run_id>/inputs/` (baseline/clinic/omics)
-- `outputs/<run_id>/preprocessing_report*.json`, `data_dictionary.md`
-- `outputs/<run_id>/splits/` (CV fold artifacts)
-- `outputs/<run_id>/results/` standardized tables
-
-## Run (HPC shard mode)
+### Full cohort mode
 
 ```bash
-sbatch slurm/ppmi_array.sbatch configs/config.demo.yaml 20
+symphony-dt run --config configs/config.demo.yaml --mode full
 ```
 
-Aggregate all tables:
+### Shard mode
+
+```bash
+symphony-dt run   --config configs/config.demo.yaml   --mode shard   --shard-id 0   --num-shards 200
+```
+
+Shard assignment is controlled via configuration:
+
+```yaml
+sharding:
+  method: hash   # hash | stride
+```
+
+---
+
+## Sharded execution
+
+### Local sharded execution (no Slurm)
+
+```bash
+set -euo pipefail
+
+for i in $(seq 0 199); do
+  symphony-dt run     --config configs/config.demo.yaml     --mode shard     --shard-id "$i"     --num-shards 200
+done
+
+symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
+```
+
+### Slurm job array (HPC)
+
+```bash
+which sbatch
+sbatch slurm/ppmi_array.sbatch configs/config.demo.yaml 200
+```
+
+After all array jobs complete:
 
 ```bash
 symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
 ```
 
-## Parity / schema checks
+---
+
+## Aggregation
+
+Merge shard-level outputs into cohort-level standardized result tables:
+
+```bash
+symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
+```
+
+---
+
+## Validation and parity checks
+
+Verify that required outputs exist and conform to expected schemas:
 
 ```bash
 symphony-dt parity-check --run-dir outputs/<run_id>
 ```
 
-## Reproducibility
+---
 
-Each run writes:
-- config snapshot
-- run metadata (UTC timestamp, seed, mode, shard)
-- deterministic CV split artifacts
+## Testing
 
-## Development
+Run the full test suite:
 
 ```bash
 pytest
 ```
+
+---
+
+## Continuous integration
+
+A minimal `.gitlab-ci.yml` example is included to:
+
+- Install the package in editable mode with development dependencies
+- Execute `pytest` on every push
+
+This ensures schema stability, execution integrity, and reproducibility across environments.
