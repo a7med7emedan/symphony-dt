@@ -36,14 +36,34 @@ def build_trajectory_clusters(states_long: pd.DataFrame) -> pd.DataFrame:
     score = agg["xM_mean"] + agg["xC_mean"] + agg["xN_mean"]
     agg["severity_score_mean"] = score
 
-    # tertile clustering
-    try:
-        agg["trajectory_cluster"] = pd.qcut(score, q=3, labels=[0, 1, 2]).astype("Int64")
-    except Exception:  # noqa: BLE001
-        r = score.rank(method="average", na_option="keep")
-        agg["trajectory_cluster"] = pd.qcut(r, q=3, labels=[0, 1, 2]).astype("Int64")
+    # shard-stable clustering: fixed cutpoints on severity_score_mean in [0,3]
 
-    agg["cluster_engine"] = "proxy_tertiles_v1"
+
+    # bins: [0,1), [1,2), [2,3]
+
+
+    cuts = pd.cut(
+
+
+        score,
+
+
+        bins=[float('-inf'), 1.0, 2.0, float('inf')],
+
+
+        labels=[0, 1, 2],
+
+
+        include_lowest=True,
+
+
+    )
+
+
+    agg['trajectory_cluster'] = cuts.astype('Int64')
+
+
+    agg['cluster_engine'] = 'proxy_fixed_bins_v1'
     out = agg[
         ["patient_id", "trajectory_cluster", "severity_score_mean", "n_visits", "state_engine", "cluster_engine"]
     ].copy()
