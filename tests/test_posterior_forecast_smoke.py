@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from pathlib import Path
 
 from symphony_dt.inference.store import PosteriorDrawSet, save_drawset
@@ -8,7 +7,6 @@ from symphony_dt.inference_backend.forecasting import posterior_predict_instance
 
 
 def test_posterior_predict_instance_smoke(tmp_path: Path) -> None:
-    # Create minimal drawset with needed arrays
     ds = PosteriorDrawSet(
         arrays={
             "C_free": np.zeros((200, 6), dtype=float),
@@ -30,15 +28,28 @@ def test_posterior_predict_instance_smoke(tmp_path: Path) -> None:
     draw_dir = tmp_path / "draws"
     save_drawset(draw_dir, ds, overwrite=True)
 
-    # Create one conditional run artifact for patient 1 visit 0 draw 0
     cond_root = tmp_path / "cond"
-    run_dir = cond_root / "patient_1" / "visit_0" / "draw_0"
-    art = ConditionalRunArtifacts(
-        samples_x_tn=np.clip(np.random.default_rng(0).uniform(0.2, 0.3, size=(50, 3)), 1e-6, 1-1e-6),
-        diagnostics={"divergences": 0, "accept_prob_mean": 0.8, "rhat_r_m": 1.0, "rhat_r_c": 1.0, "rhat_r_n": 1.0},
-        metadata={},
-    )
-    save_conditional_run(run_dir, art, overwrite=True)
+
+    # Need min_pass = max(10, ceil(0.4*L_cond)) successful runs.
+    # For L_cond=10 => min_pass=10, so create 10 successful runs draw_0..draw_9.
+    for ell in range(10):
+        run_dir = cond_root / "patient_1" / "visit_0" / f"draw_{ell}"
+        art = ConditionalRunArtifacts(
+            samples_x_tn=np.clip(
+                np.random.default_rng(ell).uniform(0.2, 0.3, size=(50, 3)),
+                1e-6,
+                1 - 1e-6,
+            ),
+            diagnostics={
+                "divergences": 0,
+                "accept_prob_mean": 0.8,
+                "rhat_r_m": 1.0,
+                "rhat_r_c": 1.0,
+                "rhat_r_n": 1.0,
+            },
+            metadata={},
+        )
+        save_conditional_run(run_dir, art, overwrite=True)
 
     pred, reasons = posterior_predict_instance(
         patient_id=1,
@@ -50,10 +61,11 @@ def test_posterior_predict_instance_smoke(tmp_path: Path) -> None:
         n_visits_total=2,
         drawset_dir=draw_dir,
         conditional_root=cond_root,
-        selected_draw_indices=[0],
+        selected_draw_indices=list(range(10)),
         l_cond=10,
         tau_conf=1.0,
         cfg=PosteriorForecastConfig(n_draws_predictive=200, seed=0),
     )
+
     assert pred is not None
     assert "pred_mean_updrs3" in pred

@@ -22,13 +22,33 @@ class StratifyConfig:
 
 
 def _qcut_or_fallback(x: pd.Series, q: int, labels_prefix: str) -> pd.Series:
-    # qcut can fail with many ties; fall back to rank-based binning.
+    """Robust quantile binning that tolerates ties/small samples."""
     s = pd.to_numeric(x, errors="coerce")
+
+    def label_codes(codes: pd.Series) -> pd.Series:
+        codes = codes.astype("Int64")
+        out = codes.astype("string")
+        m = codes.notna() & (codes >= 0)
+        out.loc[m] = (labels_prefix + "Q" + (codes.loc[m].astype(int) + 1).astype(str)).astype("string")
+        out.loc[~m] = "unknown"
+        return out
+
     try:
-        return pd.qcut(s, q=q, labels=[f"{labels_prefix}Q{i+1}" for i in range(q)])
-    except Exception:  # noqa: BLE001
+        cat = pd.qcut(s, q=q, duplicates="drop")
+        return label_codes(cat.cat.codes)
+    except Exception:
+        pass
+
+    try:
         r = s.rank(method="average", na_option="keep")
-        return pd.qcut(r, q=q, labels=[f"{labels_prefix}Q{i+1}" for i in range(q)])
+        cat = pd.qcut(r, q=q, duplicates="drop")
+        return label_codes(cat.cat.codes)
+    except Exception:
+        out = s.copy().astype("string")
+        out[:] = "unknown"
+        out.loc[s.notna()] = f"{labels_prefix}Q1"
+        return out
+
 
 
 def add_strata(
