@@ -19,3 +19,6 @@ ENV/
 .DS_Store
 .vscode/
 .idea/
+
+# Runtime outputs
+outputs/
