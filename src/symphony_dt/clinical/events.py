@@ -21,6 +21,16 @@ def _event_id(endpoint: str, direction: str, thr: float) -> str:
 def build_clinical_event_rates_by_state(risk: pd.DataFrame, horizon_states: pd.DataFrame) -> pd.DataFrame:
     key = ["patient_id", "anchor_visit_id", "target_visit_id", "horizon_center_days"]
     df = risk.merge(horizon_states, on=key, how="left")
+
+    # Normalize merged column names (avoid *_x/*_y collisions)
+    if 'state_engine' not in df.columns and 'state_engine_y' in df.columns:
+        df['state_engine'] = df['state_engine_y']
+    if 'state_id' not in df.columns and 'state_id_y' in df.columns:
+        df['state_id'] = df['state_id_y']
+    for c in ['state_engine_x','state_engine_y','state_id_x','state_id_y']:
+        if c in df.columns:
+            df = df.drop(columns=[c])
+
     df["prob_event"] = pd.to_numeric(df["prob_event"], errors="coerce")
     gcols = ["state_engine", "state_id", "endpoint", "direction", "delta_threshold", "horizon_center_days"]
     out = (
@@ -122,6 +132,23 @@ def build_personalization_diagnostics(
 def build_clinician_summary_risk_table(risk: pd.DataFrame, horizon_states: pd.DataFrame, trajectory_clusters: pd.DataFrame) -> pd.DataFrame:
     key = ["patient_id", "anchor_visit_id", "target_visit_id", "horizon_center_days"]
     df = risk.merge(horizon_states, on=key, how="left").merge(trajectory_clusters, on="patient_id", how="left")
+    # Normalize merged column names (avoid *_x/*_y collisions)
+    if 'state_engine' not in df.columns:
+        if 'state_engine_x' in df.columns:
+            df['state_engine'] = df['state_engine_x']
+        elif 'state_engine_y' in df.columns:
+            df['state_engine'] = df['state_engine_y']
+        else:
+            df['state_engine'] = 'unknown'
+    if 'state_id' not in df.columns:
+        if 'state_id_x' in df.columns:
+            df['state_id'] = df['state_id_x']
+        elif 'state_id_y' in df.columns:
+            df['state_id'] = df['state_id_y']
+    for c in ['state_engine_x','state_engine_y','state_id_x','state_id_y']:
+        if c in df.columns:
+            df = df.drop(columns=[c])
+
     df["prob_event"] = pd.to_numeric(df["prob_event"], errors="coerce")
     gcols = ["state_engine","state_id","cluster_engine","trajectory_cluster","horizon_center_days","endpoint","direction","delta_threshold"]
     out = df.groupby(gcols, dropna=False).agg(

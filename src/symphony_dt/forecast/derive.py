@@ -128,6 +128,10 @@ def build_horizon_states(horizon_long: pd.DataFrame) -> pd.DataFrame:
     bN = bin_tertile(s).astype("Int64")
     state_id = "M"+bM.astype(str)+"_C"+bC.astype(str)+"_N"+bN.astype(str)
 
+    # If anchor severity proxies are missing, emit a non-null fallback state_id
+    missing_state = bM.isna() | bC.isna() | bN.isna()
+    state_id = state_id.where(~missing_state, other="unknown")
+
     out = df[["patient_id","anchor_visit_id","target_visit_id","horizon_center_days","t_anchor_days","t_target_days","dt_days"]].copy()
     out["xM_proxy"] = u.astype(float)
     out["xC_proxy"] = q.astype(float)

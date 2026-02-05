@@ -37,7 +37,17 @@ class CohortConfig:
 class DemoConfig:
     enabled: bool = True
     n_patients: int = 25
-    patient_id_strategy: Literal["sorted_first", "stable_hash"] = "sorted_first"
+    patient_id_strategy: Literal["sorted_first", "stable_hash", "clinical_best"] = "sorted_first"
+
+
+@dataclass(frozen=True)
+class CVConfig:
+    n_folds: int = 5
+
+
+@dataclass(frozen=True)
+class ShardingConfig:
+    method: Literal["hash", "stride"] = "hash"
 
 
 @dataclass(frozen=True)
@@ -51,6 +61,8 @@ class AppConfig:
     io: IOConfig
     cohort: CohortConfig
     demo: DemoConfig
+    cv: CVConfig
+    sharding: ShardingConfig
     logging: LoggingConfig
 
 
@@ -78,6 +90,8 @@ def load_config(path: Path) -> AppConfig:
     io_d = _require(raw, "io", "root")
     cohort_d = raw.get("cohort", {}) or {}
     demo_d = raw.get("demo", {}) or {}
+    cv_d = raw.get("cv", {}) or {}
+    sh_d = raw.get("sharding", {}) or {}
     log_d = raw.get("logging", {}) or {}
 
     run = RunConfig(
@@ -114,9 +128,26 @@ def load_config(path: Path) -> AppConfig:
     )
     if demo_cfg.n_patients <= 0:
         raise ValueError("demo.n_patients must be > 0")
-    if demo_cfg.patient_id_strategy not in {"sorted_first", "stable_hash"}:
-        raise ValueError("demo.patient_id_strategy must be one of: sorted_first, stable_hash")
+    if demo_cfg.patient_id_strategy not in {"sorted_first", "stable_hash", "clinical_best"}:
+        raise ValueError("demo.patient_id_strategy must be one of: sorted_first, stable_hash, clinical_best")
+
+    cv_cfg = CVConfig(n_folds=_as_int(cv_d.get("n_folds", 5), "cv.n_folds"))
+    if cv_cfg.n_folds < 2:
+        raise ValueError("cv.n_folds must be >= 2")
+
+    sharding_method = str(sh_d.get("method", "hash")).lower()
+    if sharding_method not in {"hash", "stride"}:
+        raise ValueError("sharding.method must be one of: hash, stride")
+    sharding_cfg = ShardingConfig(method=sharding_method)  # type: ignore[arg-type]
 
     logging_cfg = LoggingConfig(level=str(log_d.get("level", "INFO")).upper())
 
-    return AppConfig(run=run, io=io_cfg, cohort=cohort_cfg, demo=demo_cfg, logging=logging_cfg)
+    return AppConfig(
+        run=run,
+        io=io_cfg,
+        cohort=cohort_cfg,
+        demo=demo_cfg,
+        cv=cv_cfg,
+        sharding=sharding_cfg,
+        logging=logging_cfg,
+    )
