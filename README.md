@@ -67,3 +67,18 @@ Each run writes:
 ```bash
 pytest
 ```
+
+## Sharded runs
+
+### Local sharded run (no Slurm)
+
+Use this when you do **not** have Slurm available (e.g., on a laptop).
+
+```bash
+set -euo pipefail
+
+for i in $(seq 0 199); do
+  symphony-dt run --config configs/config.demo.yaml --mode shard --shard-id $i --num-shards 200
+done
+
+symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
