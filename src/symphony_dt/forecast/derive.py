@@ -117,11 +117,15 @@ def build_horizon_states(horizon_long: pd.DataFrame) -> pd.DataFrame:
     s = s.clip(0.0, 1.0)
 
     def bin_tertile(x: pd.Series) -> pd.Series:
-        try:
-            return pd.qcut(x, q=3, labels=[0,1,2])
-        except Exception:  # noqa: BLE001
-            r = x.rank(method="average", na_option="keep")
-            return pd.qcut(r, q=3, labels=[0,1,2])
+        """Fixed tertile bins on proxy scale; stable across shards."""
+        x = pd.to_numeric(x, errors="coerce")
+        return pd.cut(
+            x,
+            bins=[float("-inf"), 1.0/3.0, 2.0/3.0, float("inf")],
+            labels=[0, 1, 2],
+            include_lowest=True,
+        )
+
 
     bM = bin_tertile(u).astype("Int64")
     bC = bin_tertile(q).astype("Int64")
