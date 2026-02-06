@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
@@ -151,20 +152,26 @@ def condition(
                 if arr.ndim >= 1 and arr.shape[0] > ell:
                     global_params[k] = np.asarray(arr[ell]).tolist() if arr.ndim <= 2 else np.asarray(arr[ell]).tolist()
 
-            run_conditioning_numpyro(
-                patient_id=int(pid),
-                visit_index=int(visit_index),
-                global_draw_index=int(ell),
-                patient_clinic=pdf,
-                global_params=global_params,
-                out_dir=out_dir,
-                cfg=NumPyroConditioningConfig(
-                    num_warmup=int(num_warmup),
-                    num_samples=int(num_samples),
-                    num_chains=int(num_chains),
-                    seed=int(seed),
-                ),
-            )
+            try:
+                run_conditioning_numpyro(
+                    patient_id=int(pid),
+                    visit_index=int(visit_index),
+                    global_draw_index=int(ell),
+                    patient_clinic=pdf,
+                    global_params=global_params,
+                    out_dir=out_dir,
+                    cfg=NumPyroConditioningConfig(
+                        num_warmup=int(num_warmup),
+                        num_samples=int(num_samples),
+                        num_chains=int(num_chains),
+                        seed=int(seed),
+                    ),
+                )
+            except ValueError as e:
+                if "visit_index out of range" in str(e):
+                    log.warning("Skipping patient %s for visit_index=%s: %s", pid, visit_index, e)
+                    continue
+                raise
 
     log.info("Conditioning complete. Wrote artifacts to %s", out_dir)
     console.print(f"[bold green]OK[/bold green] Conditioning artifacts written to: {out_dir}")
@@ -177,6 +184,7 @@ def forecast(
     conditional_dir: Path = typer.Option(..., "--conditional-dir", exists=True, file_okay=False),
     out_results_dir: Path = typer.Option(..., "--out-results-dir"),
     mode: str = typer.Option("demo", "--mode", help="demo|full|shard"),
+    visit_index: int = typer.Option(0, "--visit-index", help="Only forecast anchors at this visit_index (must match conditioning)"),
     shard_id: Optional[int] = typer.Option(None, "--shard-id"),
     num_shards: Optional[int] = typer.Option(None, "--num-shards"),
     l_cond: int = typer.Option(10, "--l-cond"),
@@ -203,6 +211,25 @@ def forecast(
 
     # Build instances and then overwrite preds using posterior simulation
     inst1 = build_one_step_dataset(clinic[clinic["patient_id"].isin(patient_ids)].copy())
+
+    # Map anchor_visit_id -> anchor_visit_index (must match conditioning visit_index definition)
+    v = clinic[clinic["patient_id"].isin(patient_ids)][["patient_id", "visit_id", "t_days_since_baseline"]].copy()
+    v["t_days_since_baseline"] = pd.to_numeric(v["t_days_since_baseline"], errors="coerce")
+    v = v.sort_values(["patient_id", "t_days_since_baseline", "visit_id"]).reset_index(drop=True)
+    v["visit_index"] = v.groupby("patient_id").cumcount()
+
+    n_vis = v.groupby("patient_id")["visit_index"].max().add(1).rename("n_visits_total").reset_index()
+    anchor_map = v[["patient_id", "visit_id", "visit_index"]].rename(
+        columns={"visit_id": "anchor_visit_id", "visit_index": "anchor_visit_index"}
+    )
+
+    inst1 = inst1.merge(anchor_map, on=["patient_id", "anchor_visit_id"], how="left").merge(n_vis, on="patient_id", how="left")
+    inst1 = inst1[inst1["anchor_visit_index"].notna()].copy()
+    inst1["anchor_visit_index"] = inst1["anchor_visit_index"].astype(int)
+    inst1["n_visits_total"] = pd.to_numeric(inst1["n_visits_total"], errors="coerce").fillna(0).astype(int)
+
+    # Forecast only anchors for the conditioned visit_index
+    inst1 = inst1[inst1["anchor_visit_index"] == int(visit_index)].copy()
     if inst1.empty:
         console.print("[yellow]No one-step instances for this shard.[/yellow]")
         return
@@ -211,6 +238,7 @@ def forecast(
     selected_draw_indices = list(range(int(l_cond)))
 
     rows = []
+    reason_counts = Counter()
     for _, r in inst1.iterrows():
         pid = int(r["patient_id"])
         t_anchor = float(r["t_anchor_days"])
@@ -226,12 +254,12 @@ def forecast(
         # For full fidelity, wire anchor_visit_index per patient from sorted visits (future patch).
         pred, reasons = posterior_predict_instance(
             patient_id=pid,
-            anchor_visit_index=0,
+            anchor_visit_index=int(r['anchor_visit_index']),
             t_anchor=t_anchor,
             t_target=t_target,
             y_anchor=y_anchor,
             missing_anchor=missing_anchor,
-            n_visits_total=2,
+            n_visits_total=int(r['n_visits_total']),
             drawset_dir=drawset_dir,
             conditional_root=conditional_dir,
             selected_draw_indices=selected_draw_indices,
@@ -241,6 +269,8 @@ def forecast(
         )
 
         if pred is None:
+            for rr in (reasons or []):
+                reason_counts[str(rr)] += 1
             continue
 
         out = dict(r.to_dict())

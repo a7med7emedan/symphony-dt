@@ -5,6 +5,19 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
+
+
+def _json_safe(v):
+    """Convert NaN/inf to None for JSON serialization."""
+    if v is None:
+        return None
+    try:
+        fv = float(v)
+        if not math.isfinite(fv):
+            return None
+        return fv
+    except Exception:
+        return v
 import pandas as pd
 
 from symphony_dt.inference_backend.conditioning_store import ConditionalRunArtifacts, save_conditional_run
@@ -143,6 +156,33 @@ def run_conditioning_numpyro(
         C = C.at[2, 2].set(c_free_v[5])
         return C
 
+
+    def mu_from_x_jax(x, obs):
+        """JAX-safe observation mean mapping (no numpy conversion)."""
+        eps = 1e-6
+        x = jnp.clip(x, eps, 1.0 - eps)
+
+        def sigmoid(z):
+            return 1.0 / (1.0 + jnp.exp(-z))
+
+        def logit(p):
+            return jnp.log(p) - jnp.log1p(-p)
+
+        # Supports
+        L_U, U_U = 0.0, 132.0
+        L_Q, U_Q = 0.0, 30.0
+        L_S, U_S = 0.0, 69.0
+
+        # h(p; a, b) = sigmoid(a + b*logit(p))
+        h_u = sigmoid(obs.a_u + obs.b_u * logit(x[0]))
+        h_q = sigmoid(obs.a_q + obs.b_q * logit(x[1]))
+        h_s = sigmoid(obs.a_s + obs.b_s * logit(x[2]))
+
+        mu_u = L_U + (U_U - L_U) * h_u
+        mu_q = L_Q + (U_Q - L_Q) * (1.0 - h_q)
+        mu_s = L_S + (U_S - L_S) * h_s
+        return jnp.stack([mu_u, mu_q, mu_s], axis=0)
+
     def model():
         # Prior for s0 and r only (conditional given fixed Phi); shrinkage handled at scaffold level.
         s0 = numpyro.sample("s0", dist.Normal(0.0, 1.0).expand((3,)))
@@ -177,7 +217,7 @@ def run_conditioning_numpyro(
         # likelihood on observed y with masking, approximating truncation by clipping (inputs already bounded)
         mu = []
         for k in range(T):
-            mu_k = jnp.array(mu_from_x(np.asarray(x_path[k]), obs))  # uses numpy under hood; convert
+            mu_k = mu_from_x_jax(x_path[k], obs)  # uses numpy under hood; convert
             mu.append(mu_k)
         mu = jnp.stack(mu, axis=0)
 
@@ -209,16 +249,23 @@ def run_conditioning_numpyro(
 
     divergences = int(np.asarray(extra.get("diverging", np.zeros((cfg.num_chains, cfg.num_samples), dtype=bool))).sum())
     accept_prob = extra.get("accept_prob", None)
+    if accept_prob is None:
+        # compatibility across numpyro versions
+        accept_prob = extra.get("mean_accept_prob", None)
+    if accept_prob is None:
+        accept_prob = extra.get("acceptance_rate", None)
     if accept_prob is not None:
         accept_prob_mean = float(np.asarray(accept_prob).mean())
     else:
-        accept_prob_mean = float("nan")
-
-    # Rhat for r components (chains, draws, 3)
+        accept_prob_mean = None
+# Rhat for r components (chains, draws, 3)
     r_chain = np.asarray(samples["r"])
     # gelman_rubin expects (chains, draws, ...)
-    rhat = gelman_rubin(r_chain)
-    rhat = np.asarray(rhat).reshape(3)
+    # R-hat is undefined for <2 chains or <2 draws; do not fail the run.
+    if r_chain.ndim < 3 or r_chain.shape[0] < 2 or r_chain.shape[1] < 2:
+        rhat = np.array([np.nan, np.nan, np.nan], dtype=float)
+    else:
+        rhat = np.asarray(gelman_rubin(r_chain)).reshape(3)
     diag = ConditioningRunDiagnostics(
         divergences=divergences,
         accept_prob_mean=accept_prob_mean,
@@ -231,10 +278,10 @@ def run_conditioning_numpyro(
         samples_x_tn=x_tn,
         diagnostics={
             "divergences": diag.divergences,
-            "accept_prob_mean": diag.accept_prob_mean,
-            "rhat_r_m": diag.rhat_r_m,
-            "rhat_r_c": diag.rhat_r_c,
-            "rhat_r_n": diag.rhat_r_n,
+            "accept_prob_mean": _json_safe(diag.accept_prob_mean),
+            "rhat_r_m": _json_safe(diag.rhat_r_m),
+            "rhat_r_c": _json_safe(diag.rhat_r_c),
+            "rhat_r_n": _json_safe(diag.rhat_r_n),
         },
         metadata={
             "backend": "numpyro",
