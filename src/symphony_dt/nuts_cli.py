@@ -153,20 +153,24 @@ def condition(
                     global_params[k] = np.asarray(arr[ell]).tolist() if arr.ndim <= 2 else np.asarray(arr[ell]).tolist()
 
             try:
-                run_conditioning_numpyro(
-                    patient_id=int(pid),
-                    visit_index=int(visit_index),
-                    global_draw_index=int(ell),
-                    patient_clinic=pdf,
-                    global_params=global_params,
-                    out_dir=out_dir,
-                    cfg=NumPyroConditioningConfig(
-                        num_warmup=int(num_warmup),
-                        num_samples=int(num_samples),
-                        num_chains=int(num_chains),
-                        seed=int(seed),
-                    ),
-                )
+                try:
+                                    run_conditioning_numpyro(
+                                        patient_id=int(pid),
+                                        visit_index=int(visit_index),
+                                        global_draw_index=int(ell),
+                                        patient_clinic=pdf,
+                                        global_params=global_params,
+                                        out_dir=out_dir,
+                                        cfg=NumPyroConditioningConfig(
+                                            num_warmup=int(num_warmup),
+                                            num_samples=int(num_samples),
+                                            num_chains=int(num_chains),
+                                            seed=int(seed),
+                                        ),
+                                    )
+                except ValueError as e:
+                    log.warning('Skipping patient_id=%s visit_index=%s draw=%s: %s', pid, visit_index, ell, e)
+                    continue
             except ValueError as e:
                 if "visit_index out of range" in str(e):
                     log.warning("Skipping patient %s for visit_index=%s: %s", pid, visit_index, e)
