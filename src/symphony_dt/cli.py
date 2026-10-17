@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import json
 from pathlib import Path
 from typing import Optional
@@ -74,11 +75,15 @@ def run(
     shard_id: Optional[int] = typer.Option(None, "--shard-id"),
     num_shards: Optional[int] = typer.Option(None, "--num-shards"),
     notebook: Optional[Path] = typer.Option(None, "--notebook", help="Optional notebook path for introspection artifact"),
+    input_dir: Optional[Path] = typer.Option(
+        None, "--input-dir", help="Override io.input_dir from the config (for example a mounted data folder)."
+    ),
 ) -> None:
     """Run pipeline and export standardized tables into outputs/<run_id>/results/."""
     cfg: AppConfig = load_config(config)
+    if input_dir is not None:
+        cfg = dataclasses.replace(cfg, io=dataclasses.replace(cfg.io, input_dir=str(input_dir)))
     configure_logging(cfg.logging.level)
-    log = get_logger(__name__)
     set_global_seed(cfg.run.seed)
 
     run_ctx: RunContext = create_run_context(
@@ -234,12 +239,86 @@ def run(
 
 
 @app.command()
+def synth(
+    out_dir: Path = typer.Option(Path("data/synthetic"), "--out-dir", help="Where to write the synthetic tables."),
+    n_patients: int = typer.Option(120, "--n-patients", min=1),
+    seed: int = typer.Option(20240205, "--seed"),
+) -> None:
+    """Write synthetic, PPMI-shaped input tables (no real participant data) for demos and tests."""
+    from symphony_dt.synthetic import write_synthetic_inputs
+
+    paths = write_synthetic_inputs(out_dir, n_patients=n_patients, seed=seed)
+    console.print(f"[bold green]OK[/bold green] Wrote {len(paths)} synthetic tables to {out_dir}")
+
+
+@app.command()
+def quickstart(
+    workdir: Path = typer.Option(Path("symphony-quickstart"), "--workdir", help="Folder for data, config and outputs."),
+    n_patients: int = typer.Option(120, "--n-patients", min=10),
+) -> None:
+    """Generate synthetic data, run the demo pipeline on it and parity-check the result, in one go."""
+    from symphony_dt.synthetic import write_synthetic_inputs
+
+    workdir.mkdir(parents=True, exist_ok=True)
+    data_dir = workdir / "data"
+    write_synthetic_inputs(data_dir, n_patients=n_patients)
+    cfg_path = workdir / "config.synthetic.yaml"
+    cfg_path.write_text(_QUICKSTART_CONFIG.format(outputs=(workdir / "outputs").as_posix(), data=data_dir.as_posix()))
+    run(config=cfg_path, mode="demo", shard_id=None, num_shards=None, notebook=None, input_dir=None)
+    run_dirs = sorted((workdir / "outputs").glob("symphony-dt__*__demo"))
+    res = parity_check_run_dir(run_dir=run_dirs[-1], notebook=None)
+    if not res.passed:
+        console.print(f"[bold red]FAILED[/bold red] parity check: {res.missing_files} {res.errors}")
+        raise typer.Exit(code=1)
+    console.print(f"[bold green]OK[/bold green] Quickstart complete. Results: {run_dirs[-1] / 'results'}")
+
+
+_QUICKSTART_CONFIG = """run:
+  project: symphony-dt
+  seed: 20240205
+  outputs_root: {outputs}
+  overwrite: false
+io:
+  input_dir: {data}
+  cohort: PDLIKE
+  baseline_filename_pdlike: baseline_table_PDLiKE.csv
+  clinic_filename_pdlike: clinic_visit_table_PDLiKE.csv
+  baseline_filename_all: baseline_table_ALLCOHORTS.csv
+  clinic_filename_all: clinic_visit_table_ALLCOHORTS.csv
+  omics_filename: omics_table_optional.csv
+cohort:
+  require_sex: true
+  require_age_baseline_years: true
+  pd_like_only: true
+demo:
+  enabled: true
+  n_patients: 25
+  patient_id_strategy: sorted_first
+logging:
+  level: INFO
+cv:
+  n_folds: 5
+sharding:
+  method: hash
+"""
+
+
+@app.command()
 def aggregate_all(
     runs_root: Path = typer.Option(..., "--runs-root", exists=True, file_okay=False),
     out_dir: Path = typer.Option(..., "--out-dir"),
 ) -> None:
     """Aggregate all standardized outputs across shard runs."""
     configure_logging("INFO")
+    run_dirs = [p.name for p in runs_root.glob("*") if (p / "results").is_dir()]
+    shard_runs = [n for n in run_dirs if "__shard__" in n]
+    other_runs = [n for n in run_dirs if "__shard__" not in n]
+    if shard_runs and other_runs:
+        console.print(
+            "[bold yellow]WARNING[/bold yellow] runs-root mixes shard runs with demo/full runs; "
+            "rate tables will average across all of them. Aggregate a folder holding only one set of shards. "
+            f"Non-shard runs: {', '.join(sorted(other_runs))}"
+        )
     written = aggregate_all_results(runs_root=runs_root, out_dir=out_dir)
     console.print(f"[bold green]OK[/bold green] Aggregated {len(written)} tables into: {out_dir}")
 

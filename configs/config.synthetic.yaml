@@ -1,0 +1,29 @@
+# Runs the full pipeline on synthetic, PPMI-shaped data. Create the data first with:
+#   symphony-dt synth --out-dir data/synthetic
+run:
+  project: symphony-dt
+  seed: 20240205
+  outputs_root: outputs
+  overwrite: false
+io:
+  input_dir: data/synthetic
+  cohort: PDLIKE
+  baseline_filename_pdlike: baseline_table_PDLiKE.csv
+  clinic_filename_pdlike: clinic_visit_table_PDLiKE.csv
+  baseline_filename_all: baseline_table_ALLCOHORTS.csv
+  clinic_filename_all: clinic_visit_table_ALLCOHORTS.csv
+  omics_filename: omics_table_optional.csv
+cohort:
+  require_sex: true
+  require_age_baseline_years: true
+  pd_like_only: true
+demo:
+  enabled: true
+  n_patients: 25
+  patient_id_strategy: sorted_first
+logging:
+  level: INFO
+cv:
+  n_folds: 5
+sharding:
+  method: hash
