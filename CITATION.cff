@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "symphony-dt: SYMPHONY clinic-updated digital twin for Parkinson's disease"
+type: software
+authors:
+  - family-names: Hemedan
+    given-names: Ahmed
+version: 0.2.0
+license: Apache-2.0
+repository-code: "https://github.com/a7med7emedan/symphony-dt"
+keywords:
+  - digital twin
+  - Parkinson's disease
+  - PPMI
+  - Bayesian inference
+  - forecasting
