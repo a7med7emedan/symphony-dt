@@ -89,6 +89,24 @@ FORECAST_HORIZON_STATES_CONTRACT = TableContract(
 )
 
 
+# Interval coverage of the central 90% interval [pred_p05, pred_p95]. cov90_* is canonical;
+# tables written before the rename carry the same values as cov95_*, which is accepted as an alias.
+EVALUATION_COVERAGE_CONTRACT = TableContract(
+    table_name="evaluation_coverage",
+    primary_key=("scope", "stratum_type", "stratum_value"),
+    required=(
+        ColumnRule("scope", str, nullable=False),
+        ColumnRule("stratum_type", str, nullable=True),
+        ColumnRule("stratum_value", str, nullable=True),
+        ColumnRule("n_patients", float, nullable=True, min_value=0.0),
+        *(
+            ColumnRule(f"cov90_{s}", float, nullable=True, min_value=0.0, max_value=1.0, aliases=(f"cov95_{s}",))
+            for s in ("updrs3", "moca", "scopa", "overall")
+        ),
+    ),
+)
+
+
 def validate_forecast_horizon_wide(df: pd.DataFrame) -> pd.DataFrame:
     return validate_table(df, FORECAST_HORIZON_WIDE_CONTRACT)
 
@@ -107,3 +125,7 @@ def validate_forecast_risk_curves(df: pd.DataFrame) -> pd.DataFrame:
 
 def validate_forecast_horizon_states(df: pd.DataFrame) -> pd.DataFrame:
     return validate_table(df, FORECAST_HORIZON_STATES_CONTRACT)
+
+
+def validate_evaluation_coverage(df: pd.DataFrame) -> pd.DataFrame:
+    return validate_table(df, EVALUATION_COVERAGE_CONTRACT)

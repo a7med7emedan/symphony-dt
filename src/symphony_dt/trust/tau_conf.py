@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -9,26 +11,29 @@ import numpy as np
 @dataclass(frozen=True)
 class TauConfSelectionConfig:
     """
-    Methods 'Confidence gating and do-not-trust rules' — fold-specific tau_conf selection.
+    Methods 'Confidence gating and do-not-trust rules': fold-specific tau_conf selection.
 
     Grid:
       tau in {0.05, 0.06, ..., 0.60}
 
     Objective:
-      minimize | Cov_0.05(tau) - 0.95 |  subject to  Pr(Delta <= tau) >= 0.5
+      minimise | Cov(tau) - target_coverage |  subject to  Pr(Delta <= tau) >= min_fraction_covered
 
     Where:
-      - Delta is per-anchor latent uncertainty (max IQR over x dimensions at anchor visit)
-      - Cov_0.05(tau) is empirical 95% interval coverage for one-step-ahead predictions
-        restricted to anchors with Delta <= tau, on the training fold.
+      - Delta is per-anchor latent uncertainty (max IQR over x dimensions at the anchor visit);
+      - Cov(tau) is the empirical coverage of the one-step central 90% predictive interval
+        [p05, p95], restricted to anchors with Delta <= tau, on the training fold.
 
-    Inputs to selection are precomputed per-anchor:
+    The target equals the nominal level of the interval actually produced. Every forecast
+    engine writes the 5th and 95th percentiles, so the target is 0.90.
+
+    Inputs to selection are precomputed per anchor:
       - delta: float
-      - y_true: shape (N,3) for (U,Q,S) at target visit (one-step)
-      - pi_low, pi_high: shape (N,3) predictive interval bounds at 95% for one-step
+      - y_true: shape (N,3) for (U,Q,S) at the target visit (one-step), NaN where missing
+      - pi_low, pi_high: shape (N,3) bounds of the central 90% predictive interval
     """
     tau_grid: Tuple[float, ...] = tuple(np.round(np.arange(0.05, 0.601, 0.01), 2).tolist())
-    target_coverage: float = 0.95
+    target_coverage: float = 0.90
     min_fraction_covered: float = 0.50
 
 
@@ -38,11 +43,17 @@ class TauConfSelectionResult:
     achieved_coverage: float
     fraction_kept: float
     grid_diagnostics: Dict[str, float]  # keyed summaries for reproducibility
+    # False when no tau kept min_fraction_covered of anchors and the fallback rule was used.
+    feasible: bool = True
 
 
 def _coverage(y: np.ndarray, lo: np.ndarray, hi: np.ndarray) -> float:
-    # y, lo, hi shape (M,3). Coverage is proportion of componentwise-in-interval events averaged over all entries.
-    inside = (y >= lo) & (y <= hi)
+    # y, lo, hi shape (M,3). Coverage is the proportion of componentwise-in-interval events,
+    # pooled over all finite (anchor, endpoint) entries. Missing targets are skipped, not counted as misses.
+    finite = np.isfinite(y) & np.isfinite(lo) & np.isfinite(hi)
+    if not finite.any():
+        return float("nan")
+    inside = (y[finite] >= lo[finite]) & (y[finite] <= hi[finite])
     return float(np.mean(inside))
 
 
@@ -55,6 +66,8 @@ def select_tau_conf(
 ) -> TauConfSelectionResult:
     """
     Select tau_conf per Methods. Returns best tau meeting min_fraction_covered constraint.
+
+    Ties within 1e-6 of the objective go to the smaller tau.
 
     If no tau meets the constraint, chooses tau that maximizes fraction_kept, and reports achieved coverage.
     """
@@ -90,9 +103,9 @@ def select_tau_conf(
 
         diagnostics[f"frac_le_{tau:.2f}"] = frac
         if frac > 0:
-            diagnostics[f"cov95_le_{tau:.2f}"] = cov
+            diagnostics[f"cov90_le_{tau:.2f}"] = cov
 
-        if frac >= cfg.min_fraction_covered and frac > 0:
+        if frac >= cfg.min_fraction_covered and frac > 0 and np.isfinite(cov):
             feasible_found = True
             obj = abs(cov - cfg.target_coverage)
             # tie-break: prefer smaller tau if obj equal within 1e-6
@@ -129,4 +142,46 @@ def select_tau_conf(
         achieved_coverage=pick_cov,
         fraction_kept=float(max_frac),
         grid_diagnostics=diagnostics,
+        feasible=False,
     )
+
+
+def _finite_or_none(v: float) -> Optional[float]:
+    f = float(v)
+    return f if np.isfinite(f) else None
+
+
+def selection_report(
+    result: TauConfSelectionResult,
+    cfg: TauConfSelectionConfig = TauConfSelectionConfig(),
+    **context: Any,
+) -> Dict[str, Any]:
+    """JSON-ready record of a selection: the chosen tau_conf, its grid and the run context.
+
+    Non-finite values become None, so the file stays valid JSON.
+    """
+    grid: List[Dict[str, Any]] = []
+    for tau in cfg.tau_grid:
+        frac = result.grid_diagnostics.get(f"frac_le_{tau:.2f}", float("nan"))
+        cov = result.grid_diagnostics.get(f"cov90_le_{tau:.2f}", float("nan"))
+        grid.append({"tau": float(tau), "fraction_kept": _finite_or_none(frac), "coverage": _finite_or_none(cov)})
+    return {
+        "tau_conf": float(result.tau_conf),
+        "feasible": bool(result.feasible),
+        "achieved_coverage": _finite_or_none(result.achieved_coverage),
+        "fraction_kept": _finite_or_none(result.fraction_kept),
+        "target_coverage": float(cfg.target_coverage),
+        "interval": "central 90% (5th to 95th percentile)",
+        "min_fraction_kept": float(cfg.min_fraction_covered),
+        **context,
+        "grid": grid,
+    }
+
+
+def load_tau_conf_json(path: Path) -> Dict[str, Any]:
+    """Read a file written by `symphony-dt nuts select-tau-conf` and check its tau_conf."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    tau = data.get("tau_conf") if isinstance(data, dict) else None
+    if isinstance(tau, bool) or not isinstance(tau, (int, float)) or not (0.0 < float(tau) <= 1.0):
+        raise ValueError(f"{path}: tau_conf must be a number in (0, 1], got {tau!r}")
+    return data

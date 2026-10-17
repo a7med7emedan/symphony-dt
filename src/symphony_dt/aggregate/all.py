@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import pandas as pd
 
+from symphony_dt.evaluation.metrics import add_deprecated_coverage_aliases
 from symphony_dt.forecast.io import aggregate_tables, write_table_atomic
 
 
@@ -14,6 +15,8 @@ class AggregateSpec:
     filename: str
     dedup_keys: Optional[List[str]] = None
     groupby_mean_keys: Optional[List[str]] = None
+    # Applied to each input and to the result, e.g. to reconcile renamed columns across versions.
+    normalize: Optional[Callable[[pd.DataFrame], pd.DataFrame]] = None
 
 
 DEFAULT_SPECS: List[AggregateSpec] = [
@@ -37,7 +40,11 @@ DEFAULT_SPECS: List[AggregateSpec] = [
     AggregateSpec("clinician_summary_risk_table.csv", groupby_mean_keys=["state_engine", "state_id", "cluster_engine", "trajectory_cluster", "horizon_center_days", "endpoint", "direction", "delta_threshold"]),
     AggregateSpec("patient_panel.csv", dedup_keys=["patient_id"]),
     AggregateSpec("evaluation_mae.csv", groupby_mean_keys=["scope"]),
-    AggregateSpec("evaluation_coverage.csv", groupby_mean_keys=["scope", "stratum_type", "stratum_value"]),
+    AggregateSpec(
+        "evaluation_coverage.csv",
+        groupby_mean_keys=["scope", "stratum_type", "stratum_value"],
+        normalize=add_deprecated_coverage_aliases,
+    ),
     AggregateSpec("evaluation_stratified_mae.csv", groupby_mean_keys=["scope", "stratum_type", "stratum_value"]),
 ]
 
@@ -76,8 +83,12 @@ def aggregate_all_results(
 
         if spec.groupby_mean_keys:
             dfs = [pd.read_csv(p) for p in inputs]
+            if spec.normalize is not None:
+                dfs = [spec.normalize(d) for d in dfs]
             df = pd.concat(dfs, ignore_index=True)
             df = _groupby_mean(df, spec.groupby_mean_keys)
+            if spec.normalize is not None:
+                df = spec.normalize(df)
             write_table_atomic(out_path, df)
         else:
             aggregate_tables(inputs=inputs, out_path=out_path, dedup_keys=spec.dedup_keys)

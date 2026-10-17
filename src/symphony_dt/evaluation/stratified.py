@@ -6,7 +6,13 @@ from typing import Dict, List, Literal, Optional, Sequence, Tuple
 import numpy as np
 import pandas as pd
 
-from symphony_dt.evaluation.metrics import ENDPOINTS, interval_coverage_by_patient, mae_by_patient
+from symphony_dt.evaluation.metrics import (
+    COVERAGE_PREFIX,
+    ENDPOINTS,
+    add_deprecated_coverage_aliases,
+    interval_coverage_by_patient,
+    mae_by_patient,
+)
 
 
 @dataclass(frozen=True)
@@ -220,18 +226,18 @@ def evaluation_stratified_coverage_table(
         for val, g in pp.groupby(stratum_type, dropna=False, sort=True):
             row: Dict[str, object] = {"scope": scope, "stratum_type": stratum_type, "stratum_value": str(val)}
             row["n_patients"] = int(g["patient_id"].nunique())
-            for e in ENDPOINTS:
-                row[f"cov95_{e}"] = float(pd.to_numeric(g[f"cov95_{e}"], errors="coerce").mean(skipna=True))
-            row["cov95_overall"] = float(pd.to_numeric(g["cov95_overall"], errors="coerce").mean(skipna=True))
+            for suffix in ENDPOINTS + ("overall",):
+                col = f"{COVERAGE_PREFIX}_{suffix}"
+                row[col] = float(pd.to_numeric(g[col], errors="coerce").mean(skipna=True))
             rows.append(row)
 
     for val, g in df.groupby("ledd_quartile", dropna=False, sort=True):
         pp2 = interval_coverage_by_patient(g)
         row = {"scope": scope, "stratum_type": "ledd_quartile", "stratum_value": str(val)}
         row["n_patients"] = int(pp2["patient_id"].nunique())
-        for e in ENDPOINTS:
-            row[f"cov95_{e}"] = float(pd.to_numeric(pp2[f"cov95_{e}"], errors="coerce").mean(skipna=True))
-        row["cov95_overall"] = float(pd.to_numeric(pp2["cov95_overall"], errors="coerce").mean(skipna=True))
+        for suffix in ENDPOINTS + ("overall",):
+            col = f"{COVERAGE_PREFIX}_{suffix}"
+            row[col] = float(pd.to_numeric(pp2[col], errors="coerce").mean(skipna=True))
         rows.append(row)
 
-    return pd.DataFrame(rows)
+    return add_deprecated_coverage_aliases(pd.DataFrame(rows))
