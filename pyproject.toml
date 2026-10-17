@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,19 +8,49 @@ version = "0.2.0"
 description = "SYMPHONY: a clinic-updated Bayesian digital twin for Parkinson's disease progression (PPMI-shaped data)"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "Ahmed Hemedan" }]
-keywords = ["digital twin", "parkinsons disease", "ppmi", "bayesian", "numpyro", "forecasting", "hpc", "reproducibility"]
+maintainers = [{ name = "Ahmed Hemedan" }]
+keywords = [
+  "digital twin",
+  "parkinsons disease",
+  "bayesian inference",
+  "hierarchical model",
+  "state space model",
+  "stochastic dynamics",
+  "latent state",
+  "disease progression modelling",
+  "personalised medicine",
+  "nuts",
+  "hamiltonian monte carlo",
+  "numpyro",
+  "jax",
+  "posterior predictive",
+  "uncertainty quantification",
+  "calibration",
+  "truncated likelihood",
+  "clinical forecasting",
+  "ppmi",
+  "mds-updrs",
+  "moca",
+  "scopa-aut",
+  "hpc",
+  "slurm",
+  "reproducibility",
+]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Medical Science Apps.",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Environment :: Console",
 ]
 dependencies = [
   "pandas>=2.0",
@@ -35,6 +65,9 @@ dev = [
   "pytest>=7.0",
   "pytest-cov>=4.0",
   "ruff>=0.4",
+  "build>=1.0",
+  "twine>=5.0",
+  "pre-commit>=3.5",
 ]
 
 inference = [
@@ -45,6 +78,9 @@ inference = [
 
 [project.urls]
 Homepage = "https://github.com/a7med7emedan/symphony-dt"
+Documentation = "https://github.com/a7med7emedan/symphony-dt#readme"
+Changelog = "https://github.com/a7med7emedan/symphony-dt/blob/main/CHANGELOG.md"
+Source = "https://github.com/a7med7emedan/symphony-dt"
 Issues = "https://github.com/a7med7emedan/symphony-dt/issues"
 
 [project.scripts]

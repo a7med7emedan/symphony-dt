@@ -1,99 +1,145 @@
-# SYMPHONY: Systematic Monitoring and Personalised Hybrid Orchestrated Neurological digital twin with clinic interpretability
+<p align="center">
+  <img src="https://raw.githubusercontent.com/a7med7emedan/symphony-dt/main/docs/assets/symphony-wordmark.svg" alt="SYMPHONY" width="640">
+</p>
 
-[![ci](https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml/badge.svg)](https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml)
-![python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
-[![license](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-![docker](https://img.shields.io/badge/docker-non--root%2C%20no%20data-informational)
+<p align="center">
+  <a href="https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/a7med7emedan/symphony-dt/actions/workflows/docker.yml"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/docker.yml/badge.svg" alt="docker"></a>
+  <a href="https://github.com/a7med7emedan/symphony-dt/actions/workflows/codeql.yml"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/codeql.yml/badge.svg" alt="codeql"></a>
+  <img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-3776ab" alt="python 3.10 to 3.12">
+  <a href="https://github.com/a7med7emedan/symphony-dt/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2e7d32" alt="Apache-2.0"></a>
+</p>
 
-`symphony-dt` is a reproducible, HPC-friendly Python package that produces **standardized SYMPHONY clinic-updated digital twin results** for Parkinson's disease from **PPMI-shaped clinical tables**: latent motor, cognitive and autonomic states, multi-horizon forecasts, clinical event risk curves, and confidence gating that refuses to forecast when the evidence is too thin.
+# SYMPHONY
 
-It runs deterministically on a laptop, in a container, or as a Slurm array, and every run is schema-validated.
+**Systematic Monitoring and Personalised Hybrid Orchestrated Neurological digital twin, with clinic interpretability.**
 
-## Try it in one minute (synthetic data)
+`symphony-dt` is a Python package for a clinic-updated Bayesian digital twin of Parkinson's disease. It reads PPMI-shaped clinical tables and returns latent motor, cognitive and autonomic states. It also returns multi-horizon forecasts with intervals, clinical event risk curves and calibration tables. A confidence gate withholds a forecast when the evidence behind it is too thin.
 
-No PPMI access needed. The package ships a generator for invented, PPMI-shaped tables.
+Every run is deterministic for a given seed and schema-validated. It runs the same way on a laptop, in a container or as a Slurm array.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/a7med7emedan/symphony-dt/main/docs/assets/symphony-architecture.svg" alt="SYMPHONY method: data, hierarchical latent dynamics, bounded observation model, NUTS inference, confidence gate and outputs" width="100%">
+</p>
+
+## Quick start
+
+No PPMI access is needed. The package ships a generator for invented, PPMI-shaped tables.
 
 ```bash
 pip install "git+https://github.com/a7med7emedan/symphony-dt.git"
 symphony-dt quickstart --workdir symphony-quickstart
 ```
 
-This writes synthetic inputs, runs the demo pipeline and parity-checks the result. Tables land under `symphony-quickstart/outputs/<run_id>/results/`.
+This writes synthetic inputs, runs the demo pipeline and parity-checks the result:
 
-Or with Docker:
+```text
+Loaded baseline rows=120, clinic rows=933, omics rows=0
+OK Run complete. Results: symphony-quickstart/outputs/symphony-dt__<UTC>__seed20240205__demo/results
+OK Quickstart complete.
+```
+
+The `results/` folder then holds 22 standardised tables, among them:
+
+| Table | Content |
+| --- | --- |
+| `states_long.csv`, `state_occupancy.csv` | latent domain states per visit and their occupancy |
+| `forecast_one_step_predictions.csv` | next-visit forecasts with central 90% intervals (5th to 95th percentile) |
+| `forecast_horizon_long_uq_refined.csv` | 180, 365 and 730 day forecasts with 90% intervals and their widths |
+| `forecast_risk_curves.csv` | probability of a clinically meaningful change per endpoint and horizon |
+| `evaluation_coverage.csv`, `evaluation_mae.csv` | interval coverage and error, overall and by sex and age quartile |
+| `personalization_diagnostics.csv`, `clinician_summary_risk_table.csv` | gating diagnostics and a clinician-facing risk summary |
+
+With Docker:
 
 ```bash
 docker build -t symphony-dt .
 docker run --rm -v "$PWD/qs:/work" symphony-dt quickstart --workdir /work/run
 ```
 
+## The model
+
+SYMPHONY is a hierarchical, nonlinear state-space model observed at irregular clinic visits. The implementation lives in [`model/`](src/symphony_dt/model) (NumPy) and [`inference_backend/`](src/symphony_dt/inference_backend) (NumPyro and JAX).
+
+**Latent state.** Each participant $i$ carries a state $s_i(t) \in \mathbb{R}^3$ for the motor (M), cognitive (C) and autonomic (N) domains, read on the unit scale as $x_i(t) = \sigma(s_i(t))$.
+
+**Hierarchical progression drive.** Baseline covariates $d_i$ (age, sex) and optional omics scores $z_i$ set a per-participant drive, with partial pooling across the cohort:
+
+$$
+r_i = \mu_r + \Gamma d_i + A z_i + b_i, \qquad b_i \sim \mathcal{N}\left(0, \operatorname{diag}(\sigma_r^2)\right).
+$$
+
+**Monotone stochastic dynamics.** Between visits separated by $\Delta$ days, the state can only progress, at a rate shaped by the other domains:
+
+$$
+s_i(t+\Delta) = s_i(t) + \Delta \cdot \operatorname{softplus}\left(r_i + C\,x_i(t)\right) \odot \xi_{i,t},
+\qquad
+\xi_{i,t} = \exp\left(-\tfrac{1}{2}\Delta\,\sigma_\xi^2 + \sqrt{\Delta}\,\sigma_\xi \odot \varepsilon_{i,t}\right),
+$$
+
+with $\varepsilon_{i,t} \sim \mathcal{N}(0, I_3)$. The multiplicative noise has mean one, so it widens uncertainty with elapsed time without biasing the drift. The coupling matrix $C$ has a fixed sparse topology: motor drives cognition and autonomic function, autonomic function drives cognition, and each domain has a self term. Nothing feeds back into the motor domain. This rules out cyclic feedback and limits the model to six free couplings.
+
+**Bounded observation model.** MDS-UPDRS Part III (0 to 132), MoCA (0 to 30, reversed) and SCOPA-AUT (0 to 69) are linked to the latent scale by a monotone link $h(p; a, b) = \sigma(a + b\,\operatorname{logit} p)$ with $b > 0$. Each score then follows a Gaussian truncated to its own support:
+
+$$
+y^{(k)}_{i,t} \sim \mathcal{N}_{[L_k, U_k]}\left(L_k + (U_k - L_k)\,h\left(x^{(k)}_i(t); a_k, b_k\right),\ \sigma_k^2\right).
+$$
+
+The truncation matters at the floor and ceiling of each scale, where many participants sit (MoCA near 30 is common). Missing endpoints are masked rather than imputed.
+
+## Inference
+
+The Bayesian path is opt-in and needs the inference extras (`pip install "symphony-dt[inference] @ git+https://github.com/a7med7emedan/symphony-dt.git"`).
+
+1. **Global scaffold.** `symphony-dt nuts fit-scaffold` samples the population posterior with the No-U-Turn Sampler (NumPyro on JAX). All innovations $\varepsilon$ and random effects are non-centred, which avoids funnel geometry. Draws are stored as a versioned drawset.
+2. **Per-patient conditioning.** `symphony-dt nuts condition` fixes global parameters at $L_{\text{cond}}$ scaffold draws. It then re-samples each participant's initial state, drive and innovations from their visits up to an anchor. Every conditional run records divergences, mean acceptance probability and $\hat{R}$.
+3. **Posterior predictive forecasts.** `symphony-dt nuts forecast` pools the conditional runs into a mixture. It simulates the dynamics forward to each horizon and writes predictive intervals and event probabilities.
+
+The default `run` command uses a baseline engine: last observation carried forward, with intervals of plus or minus 10% of each scale's range. It is fast enough for cohort-wide HPC sweeps. It writes the same table schemas, so Bayesian results can be compared with it like for like.
+
+## Confidence gating
+
+A forecast is shown only when it can be trusted ([`personalization/gating.py`](src/symphony_dt/personalization/gating.py)). It is suppressed when:
+
+1. the participant has fewer than two clinic visits;
+2. any endpoint is missing at the anchor visit;
+3. latent uncertainty $\Delta_{i,n} = \max_j \operatorname{IQR}\left(x_j(t_{i,n})\right)$ exceeds $\tau_{\text{conf}}$;
+4. fewer than $\max\left(10, \lceil 0.4\,L_{\text{cond}} \rceil\right)$ conditional runs pass their diagnostics.
+
+A fifth rule keeps intervals but withholds threshold-event probabilities when an anchor score sits on a scale boundary.
+
+[`select_tau_conf`](src/symphony_dt/trust/tau_conf.py) chooses $\tau_{\text{conf}}$ for a training fold on a grid from 0.05 to 0.60. It picks the value whose empirical interval coverage is closest to the target, while keeping at least half of the anchors. Pass the chosen value to `nuts forecast --tau-conf`. The default of 1.0 leaves rule 3 inactive, because the interquartile range on the unit scale cannot exceed 1.
+
+## Calibration and evaluation
+
+Forecasts are scored by mean absolute error and interval coverage, overall and stratified by sex and age quartile. For posterior draws, the package also provides CRPS and probability integral transform (PIT) values under truncation, with a Kolmogorov distance to uniformity. Trajectory clusters and state binning use fixed cut points, so results do not depend on how patients were sharded.
+
 ## Data governance
 
 PPMI data is governed by the PPMI Data Use Agreement. This repository therefore:
 
 - contains **no PPMI data**, raw or derived, and no per-participant results;
-- builds a container image that holds **code only** (CI checks that no data files are inside);
-- ignores `data/`, `outputs/` and `*.csv` in git so local tables are not committed by accident.
+- builds a container image that holds **code only**, and CI checks that no data files are inside;
+- ignores `data/`, `outputs/` and `*.csv` in git, so local tables are not committed by accident.
 
 Use your own approved PPMI export locally. The synthetic generator exists so that tests, CI and demos never need real data.
 
-## Key capabilities
-
-- Deterministic **demo** mode for fast validation
-- **Full-cohort** execution in a single run
-- **Shard-based execution** for HPC (Slurm arrays or local loops)
-- Shard-safe execution + reproducible aggregation
-- Output **parity and schema validation**
-- Unit and integration testing via `pytest`
-- **GitHub Actions** CI: lint, tests on Python 3.10 to 3.12, inference extras, synthetic end-to-end run, Docker build and in-container run
-- Synthetic, PPMI-shaped data generator (`symphony-dt synth`, `symphony-dt quickstart`)
-- Optional **Bayesian personalization / posterior simulation** via NumPyro + JAX (extras)
-
-> By default, the pipeline uses stable baseline engines (e.g. LOCF) for robustness and HPC scaling.  
-> NumPyro/JAX-based NUTS workflows are **opt-in** and do not affect baseline runs unless explicitly invoked.
-
----
-
 ## Installation
-
-### Create and activate a virtual environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -U pip
+pip install -e ".[dev]"               # pipeline, tests and tooling
+pip install -e ".[dev,inference]"     # adds NumPyro and JAX for the nuts commands
 ```
-
-### Install the package (development)
-
-```bash
-pip install -e ".[dev]"
-```
-
-### Optional inference extras (NumPyro / JAX)
-
-Install this only if you intend to run the `symphony-dt nuts ...` commands.
-
-```bash
-pip install -e ".[dev,inference]"
-```
-
----
 
 ## Inputs
 
-The pipeline expects a directory containing the processed CSV tables (e.g. extracted from a preprocessing step):
-`baseline_table_PDLiKE.csv` and `clinic_visit_table_PDLiKE.csv` (see `src/symphony_dt/synthetic.py` for the exact columns).
-
-Configure the input location in `configs/config.demo.yaml`, or override it per run:
-
-```yaml
-io:
-  input_dir: data/ppmi_preprocessed   # local only, never committed
-```
+The pipeline expects a directory of processed tables: `baseline_table_PDLiKE.csv` and `clinic_visit_table_PDLiKE.csv`. [`synthetic.py`](src/symphony_dt/synthetic.py) documents the exact columns. Set the location in `configs/config.demo.yaml` or per run:
 
 ```bash
-symphony-dt run --config configs/config.demo.yaml --mode demo --input-dir /path/to/preprocessed_unzipped
+symphony-dt run --config configs/config.demo.yaml --mode demo --input-dir /path/to/preprocessed
 ```
 
 To generate synthetic tables with the same layout:
@@ -103,7 +149,7 @@ symphony-dt synth --out-dir data/synthetic --n-patients 120
 symphony-dt run --config configs/config.synthetic.yaml --mode demo
 ```
 
-### Docker with your own data
+Docker with your own data, mounted read-only and never copied into the image:
 
 ```bash
 docker build --build-arg INFERENCE=1 -t symphony-dt:inference .
@@ -111,162 +157,78 @@ docker run --rm -v /path/to/preprocessed:/data:ro -v "$PWD/outputs:/work/outputs
   symphony-dt:inference run --config /opt/symphony-dt/configs/config.demo.yaml --mode demo --input-dir /data
 ```
 
-Data is mounted read-only at runtime and never copied into the image.
-
----
-
 ## Run modes
 
-### Demo mode
+| Mode | Command | Use |
+| --- | --- | --- |
+| demo | `symphony-dt run --config configs/config.demo.yaml --mode demo` | fast validation on a fixed subset |
+| full | `symphony-dt run --config configs/config.demo.yaml --mode full` | the whole cohort in one process |
+| shard | `symphony-dt run --config configs/config.demo.yaml --mode shard --shard-id 0 --num-shards 200` | one slice of the cohort, for arrays |
+
+Shard assignment is set by `sharding.method` (`hash` or `stride`).
+
+### Bayesian personalisation end to end
 
 ```bash
-symphony-dt run --config configs/config.demo.yaml --mode demo
+symphony-dt nuts fit-scaffold --config configs/config.demo.yaml --fold-id 0 \
+  --out-dir outputs/scaffold_fold0 --seed 0 --num-warmup 100 --num-samples 100 --num-chains 2
+
+symphony-dt nuts condition --config configs/config.demo.yaml --drawset-dir outputs/scaffold_fold0 \
+  --out-dir outputs/cond_fold0_v5 --mode demo --visit-index 5 --l-cond 10 --seed 0 \
+  --num-warmup 50 --num-samples 50 --num-chains 1
+
+symphony-dt nuts forecast --config configs/config.demo.yaml --drawset-dir outputs/scaffold_fold0 \
+  --conditional-dir outputs/cond_fold0_v5 --out-results-dir outputs/posterior_v5 --mode demo \
+  --visit-index 5 --l-cond 10 --n-draws-predictive 200 --seed 0
 ```
 
-### Full cohort mode
+Choose a `--visit-index` that exists for each patient. Participants with too few visits are skipped, not failed. The values above are smoke-test budgets. Use at least 4 chains and several hundred warm-up and sampling iterations for real analyses.
+
+### Sharded execution
+
+Local loop, no scheduler needed:
 
 ```bash
-symphony-dt run --config configs/config.demo.yaml --mode full
-```
-
-### Shard mode
-
-```bash
-symphony-dt run --config configs/config.demo.yaml --mode shard --shard-id 0 --num-shards 200
-```
-
-Shard assignment is controlled via configuration:
-
-```yaml
-sharding:
-  method: hash   # hash | stride
-```
-
----
-
-## Bayesian personalization (NUTS / NumPyro)
-
-This is intended for posterior conditioning + posterior predictive simulation.
-It requires the inference extras (`pip install -e ".[dev,inference]"`).
-
-### 1) Fit a scaffold (global posterior)
-
-```bash
-symphony-dt nuts fit-scaffold   --config configs/config.demo.yaml   --fold-id 0   --out-dir outputs/scaffold_fold0_smoke   --seed 0   --num-warmup 100   --num-samples 100   --num-chains 2
-```
-
-### 2) Condition per patient/visit (personalization artifacts)
-
-Choose a `--visit-index` that exists for each patient. In many PPMI-style exports, early visit indices may not have all endpoints recorded.
-For a demo smoke run, `--visit-index 5` is typically a good default.
-
-```bash
-symphony-dt nuts condition   --config configs/config.demo.yaml   --drawset-dir outputs/scaffold_fold0_smoke   --out-dir outputs/cond_fold0_v5_smoke   --mode demo   --visit-index 5   --l-cond 10   --seed 0   --num-warmup 50   --num-samples 50   --num-chains 1
-```
-
-### 3) Write posterior predictive forecasts
-
-```bash
-symphony-dt nuts forecast   --config configs/config.demo.yaml   --drawset-dir outputs/scaffold_fold0_smoke   --conditional-dir outputs/cond_fold0_v5_smoke   --out-results-dir outputs/posterior_results_demo_v5   --mode demo   --visit-index 5   --l-cond 10   --n-draws-predictive 200   --seed 0
-```
-
----
-
-## Sharded execution
-
-### Local sharded execution (no Slurm)
-
-Use this when you do **not** have Slurm available (e.g., on a laptop).
-
-```bash
-set -euo pipefail
-
 for i in $(seq 0 199); do
   symphony-dt run --config configs/config.demo.yaml --mode shard --shard-id "$i" --num-shards 200
 done
-
 symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
 ```
 
-### Slurm job array (HPC)
-
-> `sbatch` exists only on a Slurm login/submit node. If you run this on a laptop, `sbatch: command not found` is expected.
+Slurm job array, from a login node:
 
 ```bash
-which sbatch
 sbatch slurm/ppmi_array.sbatch configs/config.demo.yaml 200
+symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS   # after the array finishes
 ```
 
-After all array jobs complete:
+`aggregate-all` de-duplicates patient-level tables on their keys. Rate tables are averaged across run directories without weighting by shard size. Point `--runs-root` at one set of shard runs only; the command warns if shard runs are mixed with demo or full runs.
 
-```bash
-symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
-```
-
----
-
-## Aggregation
-
-Merge shard-level outputs into cohort-level standardized result tables:
-
-```bash
-symphony-dt aggregate-all --runs-root outputs --out-dir outputs/COHORT_RESULTS
-```
-
-Patient-level tables are de-duplicated on their keys. Rate tables are averaged across run directories without weighting by shard size, so point `--runs-root` at one set of shard runs only. The command warns if it finds shard runs mixed with demo or full runs.
-
----
-
-## Validation and parity checks
-
-Verify that required outputs exist and conform to expected schemas:
+### Validation
 
 ```bash
 RUN_DIR=$(ls -dt outputs/symphony-dt__* | head -n 1)
 symphony-dt parity-check --run-dir "$RUN_DIR"
 ```
 
----
+## Quality and automation
 
-## Testing
+- **Tests.** `pytest` covers the dynamics, observation model, truncated normal, gating, $\tau_{\text{conf}}$ selection, sharding and aggregation. It also runs an end-to-end NUTS fit, condition and forecast on synthetic data.
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)). This runs ruff, then tests on Linux (Python 3.10 to 3.12), macOS and Windows, then the full suite with NumPyro and JAX, then a clean-install quickstart.
+- **Container** ([`docker.yml`](.github/workflows/docker.yml)). This builds both images with layer caching and checks they run as non-root and contain no data files. It then runs the quickstart inside each one and publishes to GHCR on version tags.
+- **Security.** CodeQL analysis, Dependabot updates for pip, Actions and Docker, and a [security policy](SECURITY.md).
+- **Releases** ([`release.yml`](.github/workflows/release.yml)). Builds and checks the distributions, verifies the tag against the package version and publishes release notes from the changelog.
 
-Run the full test suite:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow.
 
-```bash
-pytest
-```
+## Results explorer
 
-Recommended smoke checks after changes:
-
-```bash
-symphony-dt run --config configs/config.demo.yaml --mode demo
-symphony-dt run --config configs/config.demo.yaml --mode full
-```
-
----
-
-## Continuous integration
-
-`.github/workflows/ci.yml` runs on every push and pull request:
-
-- `ruff` lint
-- `pytest` with coverage on Python 3.10, 3.11 and 3.12
-- the full suite again with the NumPyro/JAX extras, including an end-to-end NUTS fit, condition and forecast on synthetic data
-- `symphony-dt quickstart` on a clean install
-- Docker build (with and without inference extras), non-root check, no-data check, and the quickstart inside the container
-
-A matching `.gitlab-ci.yml` is kept for GitLab mirrors.
-
-## Results explorer notebook
-
-`notebooks/explorer/` holds an interactive Jupyter/Colab dashboard for a SYMPHONY results bundle. The bundle is not distributed here; see `notebooks/explorer/README.md`.
-
----
+[`notebooks/explorer/`](notebooks/explorer) holds an interactive Jupyter and Colab dashboard for a SYMPHONY results bundle. The bundle is not distributed here; see its README.
 
 ## Citation
 
-If you use this software, please cite it using `CITATION.cff`.
+If you use this software, please cite it using [CITATION.cff](CITATION.cff).
 
-## License
+## Licence
 
-Apache-2.0 (see `LICENSE` and `NOTICE`). PPMI data used with this software remains subject to the PPMI Data Use Agreement.
+Apache-2.0, see [LICENSE](LICENSE) and [NOTICE](NOTICE). PPMI data used with this software remains subject to the PPMI Data Use Agreement.

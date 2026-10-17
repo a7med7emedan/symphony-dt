@@ -1,0 +1,24 @@
+{
+  "@context": "https://w3id.org/codemeta/3.0",
+  "@type": "SoftwareSourceCode",
+  "name": "symphony-dt",
+  "description": "SYMPHONY: a clinic-updated Bayesian digital twin for Parkinson's disease progression from PPMI-shaped clinical tables.",
+  "version": "0.2.0",
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "codeRepository": "https://github.com/a7med7emedan/symphony-dt",
+  "issueTracker": "https://github.com/a7med7emedan/symphony-dt/issues",
+  "programmingLanguage": "Python",
+  "runtimePlatform": "Python 3.10, 3.11, 3.12",
+  "operatingSystem": ["Linux", "macOS", "Windows"],
+  "developmentStatus": "active",
+  "author": [
+    {"@type": "Person", "givenName": "Ahmed", "familyName": "Hemedan"}
+  ],
+  "softwareRequirements": ["pandas>=2.0", "numpy>=1.24", "pyyaml>=6.0", "typer>=0.9", "rich>=13.0"],
+  "softwareSuggestions": ["numpyro>=0.13", "jax>=0.4", "jaxlib>=0.4"],
+  "keywords": [
+    "digital twin", "Parkinson's disease", "Bayesian inference", "hierarchical model",
+    "state space model", "NUTS", "NumPyro", "JAX", "posterior predictive",
+    "uncertainty quantification", "clinical forecasting", "PPMI", "reproducibility"
+  ]
+}

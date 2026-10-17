@@ -1,0 +1,246 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="880" viewBox="0 0 1200 880" role="img" aria-labelledby="title desc">
+<title id="title">SYMPHONY method overview</title>
+<desc id="desc">Clinic data feed a hierarchical latent state-space model of motor, cognitive and autonomic progression. NUTS fits a global scaffold, each patient is conditioned at an anchor visit, posterior predictive simulation gives forecasts, a confidence gate applies do-not-trust rules, and outputs are latent states, forecasts, event risk curves and calibration.</desc>
+<style>
+  text { font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; fill: #1B2230; }
+  .t { font-size: 26px; font-weight: 700; }
+  .h { font-size: 16px; font-weight: 700; letter-spacing: 1.6px; }
+  .b { font-size: 15px; }
+  .bb { font-size: 15px; font-weight: 700; }
+  .g { font-size: 15px; fill: #525C6B; }
+  .m { font-family: 'STIX Two Text', 'Cambria Math', 'Times New Roman', Times, serif; font-size: 18px; }
+  .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 15px; }
+  .sx { font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-style: normal; }
+  .sb { font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 700; }
+  .badge { font-size: 13px; font-weight: 700; fill: #FFFFFF; }
+</style>
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#6B7484"/></marker>
+  <marker id="ahs" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#6B7484"/></marker>
+</defs>
+<rect width="1200" height="880" fill="#FFFFFF"/>
+<text x="24" y="46" class="t">SYMPHONY method overview</text>
+<text x="24" y="72" class="g">From irregular clinic visits to per-patient forecasts that must pass a confidence gate</text>
+<circle cx="870" cy="41" r="11" fill="#2E3F92"/>
+<text x="870" y="45.5" class="badge" text-anchor="middle">M</text>
+<text x="888" y="46" class="b">motor</text>
+<circle cx="962" cy="41" r="11" fill="#B35400"/>
+<text x="962" y="45.5" class="badge" text-anchor="middle">C</text>
+<text x="980" y="46" class="b">cognitive</text>
+<circle cx="1078" cy="41" r="11" fill="#0B7A70"/>
+<text x="1078" y="45.5" class="badge" text-anchor="middle">N</text>
+<text x="1096" y="46" class="b">autonomic</text>
+<rect x="24" y="92" width="160" height="620" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
+<circle cx="46" cy="119" r="11" fill="#1B2230"/>
+<text x="46" y="123.5" class="badge" text-anchor="middle">1</text>
+<text x="64" y="124" class="h">DATA</text>
+<text x="38" y="148" class="g">PPMI-shaped tables</text>
+<rect x="32" y="164" width="144" height="96" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="40" y="188" class="bb">Baseline table</text>
+<text x="40" y="214" class="m" font-size="17"><tspan class="sx">age, sex</tspan> → <tspan font-style="italic">d</tspan><tspan dy="5.1" font-size="11.6"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.1">&#8202;</tspan></text>
+<text x="40" y="240" class="m" font-size="17"><tspan class="sx">omics scores</tspan> <tspan font-style="italic">z</tspan><tspan dy="5.1" font-size="11.6"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.1">&#8202;</tspan></text>
+<rect x="32" y="274" width="144" height="312" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="40" y="298" class="bb">Clinic visits</text>
+<text x="40" y="320" class="g">irregular times</text>
+<path d="M42 342H162" stroke="#525C6B" stroke-width="2"/>
+<circle cx="44" cy="342" r="5" fill="#FFFFFF" stroke="#1B2230" stroke-width="2"/>
+<circle cx="68" cy="342" r="5" fill="#FFFFFF" stroke="#1B2230" stroke-width="2"/>
+<circle cx="82" cy="342" r="5" fill="#FFFFFF" stroke="#1B2230" stroke-width="2"/>
+<circle cx="120" cy="342" r="5" fill="#FFFFFF" stroke="#1B2230" stroke-width="2"/>
+<circle cx="136" cy="342" r="5" fill="#FFFFFF" stroke="#1B2230" stroke-width="2"/>
+<circle cx="164" cy="342" r="5" fill="#FFFFFF" stroke="#1B2230" stroke-width="2"/>
+<text x="40" y="370" class="m" font-size="16"><tspan font-style="italic">t</tspan><tspan dy="4.8" font-size="10.9"><tspan font-style="italic">i</tspan>,1</tspan><tspan dy="-4.8">&#8202;</tspan> &lt; <tspan font-style="italic">t</tspan><tspan dy="4.8" font-size="10.9"><tspan font-style="italic">i</tspan>,2</tspan><tspan dy="-4.8">&#8202;</tspan> &lt; … &lt; <tspan font-style="italic">t</tspan><tspan dy="4.8" font-size="10.9"><tspan font-style="italic">i</tspan>,<tspan font-style="italic">n</tspan></tspan><tspan dy="-4.8">&#8202;</tspan></text>
+<text x="40" y="400" class="g">three endpoints</text>
+<rect x="38" y="412" width="5" height="44" rx="2" fill="#2E3F92"/>
+<text x="52" y="428" class="bb">MDS-UPDRS III</text>
+<text x="52" y="449" class="g">0 to 132</text>
+<rect x="38" y="472" width="5" height="44" rx="2" fill="#B35400"/>
+<text x="52" y="488" class="bb">MoCA</text>
+<text x="52" y="509" class="g">0 to 30, reversed</text>
+<rect x="38" y="532" width="5" height="44" rx="2" fill="#0B7A70"/>
+<text x="52" y="548" class="bb">SCOPA-AUT</text>
+<text x="52" y="569" class="g">0 to 69</text>
+<rect x="32" y="600" width="144" height="98" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="40" y="624" class="bb">Synthetic tables</text>
+<text x="40" y="650" class="code">synth</text>
+<text x="40" y="676" class="code">quickstart</text>
+<rect x="207" y="92" width="306" height="620" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
+<circle cx="229" cy="119" r="11" fill="#1B2230"/>
+<text x="229" y="123.5" class="badge" text-anchor="middle">2</text>
+<text x="247" y="124" class="h">MODEL</text>
+<text x="221" y="148" class="g">hierarchical state-space model</text>
+<rect x="215" y="164" width="290" height="100" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="223" y="188" class="bb">Progression drive</text>
+<text x="223" y="218" class="m"><tspan font-style="italic">r</tspan><tspan dy="5.4" font-size="12.2"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.4">&#8202;</tspan> = μ<tspan dy="5.4" font-size="12.2"><tspan font-style="italic">r</tspan></tspan><tspan dy="-5.4">&#8202;</tspan> + Γ <tspan font-style="italic">d</tspan><tspan dy="5.4" font-size="12.2"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.4">&#8202;</tspan> + <tspan font-style="italic">A</tspan> <tspan font-style="italic">z</tspan><tspan dy="5.4" font-size="12.2"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.4">&#8202;</tspan> + <tspan font-style="italic">b</tspan><tspan dy="5.4" font-size="12.2"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.4">&#8202;</tspan></text>
+<text x="223" y="248" class="m"><tspan font-style="italic">b</tspan><tspan dy="5.4" font-size="12.2"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.4">&#8202;</tspan> ~ <tspan font-style="italic">N</tspan>(0, diag σ<tspan dy="5.4" font-size="12.2"><tspan font-style="italic">r</tspan></tspan><tspan dy="-5.4">&#8202;</tspan><tspan dy="-7.2" font-size="12.2">2</tspan><tspan dy="7.2">&#8202;</tspan>)</text>
+<path d="M360 264V276" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="215" y="278" width="290" height="270" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="223" y="302" class="bb">Latent dynamics between visits</text>
+<text x="223" y="330" class="m"><tspan font-style="italic">s</tspan> = (<tspan fill="#2E3F92" font-weight="700"><tspan font-style="italic">M</tspan></tspan>, <tspan fill="#B35400" font-weight="700"><tspan font-style="italic">C</tspan></tspan>, <tspan fill="#0B7A70" font-weight="700"><tspan font-style="italic">N</tspan></tspan>),   <tspan font-style="italic">x</tspan> = sigmoid(<tspan font-style="italic">s</tspan>)</text>
+<text x="223" y="360" class="m"><tspan font-style="italic">s</tspan>(<tspan font-style="italic">t</tspan> + Δ<tspan font-style="italic">t</tspan>) = <tspan font-style="italic">s</tspan>(<tspan font-style="italic">t</tspan>)</text>
+<text x="247" y="386" class="m">+ Δ<tspan font-style="italic">t</tspan> · softplus(<tspan font-style="italic">r</tspan><tspan dy="5.4" font-size="12.2"><tspan font-style="italic">i</tspan></tspan><tspan dy="-5.4">&#8202;</tspan> + <tspan font-style="italic">C</tspan> <tspan font-style="italic">x</tspan>(<tspan font-style="italic">t</tspan>)) ⊙ ξ</text>
+<text x="223" y="414" class="m">ξ = exp(−½Δ<tspan font-style="italic">t</tspan> σ<tspan dy="5.4" font-size="12.2">ξ</tspan><tspan dy="-5.4">&#8202;</tspan><tspan dy="-7.2" font-size="12.2">2</tspan><tspan dy="7.2">&#8202;</tspan> + √Δ<tspan font-style="italic">t</tspan> σ<tspan dy="5.4" font-size="12.2">ξ</tspan><tspan dy="-5.4">&#8202;</tspan> ⊙ ε)</text>
+<rect x="225" y="432" width="136" height="106" rx="6" fill="#FAFBFC" stroke="#E1E5EB" stroke-width="1"/>
+<path d="M270.0 470.0L315.0 470.0" stroke="#6B7484" stroke-width="1.8" marker-end="url(#ahs)"/>
+<path d="M266.3 479.9L280.4 492.2" stroke="#6B7484" stroke-width="1.8" marker-end="url(#ahs)"/>
+<path d="M305.3 494.1L319.4 481.8" stroke="#6B7484" stroke-width="1.8" marker-end="url(#ahs)"/>
+<path d="M248.0 458.0C239.0 436.0 271.0 436.0 263.0 456.0" stroke="#6B7484" stroke-width="1.6" fill="none" marker-end="url(#ahs)"/>
+<circle cx="255" cy="470" r="13" fill="#2E3F92"/>
+<text x="255" y="475" class="badge" text-anchor="middle">M</text>
+<path d="M326.0 458.0C317.0 436.0 349.0 436.0 341.0 456.0" stroke="#6B7484" stroke-width="1.6" fill="none" marker-end="url(#ahs)"/>
+<circle cx="333" cy="470" r="13" fill="#B35400"/>
+<text x="333" y="475" class="badge" text-anchor="middle">C</text>
+<path d="M287.0 516.0C278.0 538.0 310.0 538.0 302.0 518.0" stroke="#6B7484" stroke-width="1.6" fill="none" marker-end="url(#ahs)"/>
+<circle cx="294" cy="504" r="13" fill="#0B7A70"/>
+<text x="294" y="509" class="badge" text-anchor="middle">N</text>
+<text x="375" y="452" class="bb">coupling C</text>
+<text x="375" y="474" class="g">fixed sparse</text>
+<text x="375" y="494" class="g">topology, no</text>
+<text x="375" y="514" class="g">cross-domain</text>
+<text x="375" y="534" class="g">cycles</text>
+<path d="M360 548V560" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="215" y="562" width="290" height="136" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="223" y="586" class="bb">Bounded observation</text>
+<text x="223" y="614" class="m"><tspan font-style="italic">h</tspan>(<tspan font-style="italic">p</tspan>) = sigmoid(<tspan font-style="italic">a</tspan> + <tspan font-style="italic">b</tspan> logit <tspan font-style="italic">p</tspan>),  <tspan font-style="italic">b</tspan> &gt; 0</text>
+<text x="223" y="642" class="m">μ = <tspan font-style="italic">L</tspan> + (<tspan font-style="italic">U</tspan> − <tspan font-style="italic">L</tspan>) <tspan font-style="italic">h</tspan>(<tspan font-style="italic">x</tspan>),  MoCA: 1 − <tspan font-style="italic">h</tspan></text>
+<text x="223" y="672" class="m"><tspan font-style="italic">y</tspan> ~ <tspan font-style="italic">N</tspan>(μ, σ<tspan dy="-7.2" font-size="12.2">2</tspan><tspan dy="7.2">&#8202;</tspan>) truncated to [<tspan font-style="italic">L</tspan>, <tspan font-style="italic">U</tspan>]</text>
+<rect x="536" y="92" width="220" height="620" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
+<circle cx="558" cy="119" r="11" fill="#1B2230"/>
+<text x="558" y="123.5" class="badge" text-anchor="middle">3</text>
+<text x="576" y="124" class="h">INFERENCE</text>
+<text x="550" y="148" class="g">NUTS in NumPyro and JAX</text>
+<rect x="544" y="164" width="204" height="168" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<circle cx="560" cy="185" r="10" fill="#525C6B"/>
+<text x="560" y="189.5" class="badge" text-anchor="middle">a</text>
+<text x="578" y="190" class="bb">Global scaffold</text>
+<text x="552" y="216" class="b">fit on training patients;</text>
+<text x="552" y="238" class="b">shared parameters Φ:</text>
+<text x="552" y="260" class="m" font-size="16">μ<tspan dy="4.8" font-size="10.9"><tspan font-style="italic">r</tspan></tspan><tspan dy="-4.8">&#8202;</tspan>, Γ, <tspan font-style="italic">A</tspan>, <tspan font-style="italic">C</tspan>, σ<tspan dy="4.8" font-size="10.9"><tspan font-style="italic">r</tspan></tspan><tspan dy="-4.8">&#8202;</tspan>, σ<tspan dy="4.8" font-size="10.9">ξ</tspan><tspan dy="-4.8">&#8202;</tspan>, <tspan font-style="italic">a</tspan>, <tspan font-style="italic">b</tspan>, σ</text>
+<text x="552" y="282" class="b">saved as a drawset</text>
+<rect x="550" y="294" width="176" height="26" rx="5" fill="#EEF0F4"/>
+<text x="558" y="312" class="code">nuts fit-scaffold</text>
+<path d="M646 332V344" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="544" y="346" width="204" height="212" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<circle cx="560" cy="367" r="10" fill="#525C6B"/>
+<text x="560" y="371.5" class="badge" text-anchor="middle">b</text>
+<text x="578" y="372" class="bb">Conditioning</text>
+<text x="552" y="398" class="b">per patient, at anchor n:</text>
+<text x="552" y="420" class="m" font-size="16"><tspan font-style="italic">L</tspan><tspan dy="4.8" font-size="10.9">cond</tspan><tspan dy="-4.8">&#8202;</tspan><tspan class="sx"> runs, each fixing</tspan></text>
+<text x="552" y="442" class="m" font-size="16"><tspan class="sx">one global draw </tspan>Φ<tspan dy="-6.4" font-size="10.9">(ℓ)</tspan><tspan dy="6.4">&#8202;</tspan><tspan class="sx">,</tspan></text>
+<text x="552" y="464" class="m" font-size="16"><tspan class="sx">sampling </tspan><tspan font-style="italic">s</tspan><tspan dy="4.8" font-size="10.9">0</tspan><tspan dy="-4.8">&#8202;</tspan>, <tspan font-style="italic">r</tspan><tspan dy="4.8" font-size="10.9"><tspan font-style="italic">i</tspan></tspan><tspan dy="-4.8">&#8202;</tspan>, ε</text>
+<text x="552" y="486" class="b">checks: divergences,</text>
+<text x="552" y="508" class="b">accept prob, R̂</text>
+<rect x="550" y="520" width="176" height="26" rx="5" fill="#EEF0F4"/>
+<text x="558" y="538" class="code">nuts condition</text>
+<path d="M646 558V570" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="544" y="572" width="204" height="126" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<circle cx="560" cy="593" r="10" fill="#525C6B"/>
+<text x="560" y="597.5" class="badge" text-anchor="middle">c</text>
+<text x="578" y="598" class="bb">Posterior predictive</text>
+<text x="552" y="624" class="b">simulate pooled runs</text>
+<text x="552" y="646" class="b">to future visits</text>
+<rect x="550" y="660" width="176" height="26" rx="5" fill="#EEF0F4"/>
+<text x="558" y="678" class="code">nuts forecast</text>
+<rect x="779" y="92" width="202" height="620" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
+<circle cx="801" cy="119" r="11" fill="#1B2230"/>
+<text x="801" y="123.5" class="badge" text-anchor="middle">4</text>
+<text x="819" y="124" class="h">GATE</text>
+<text x="793" y="148" class="g">do-not-trust rules</text>
+<rect x="787" y="164" width="186" height="348" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="795" y="188" class="bb">Suppress the forecast if</text>
+<circle cx="803" cy="213" r="9" fill="#1B2230"/>
+<text x="803" y="217.5" class="badge" text-anchor="middle">1</text>
+<text x="819" y="218" class="b">fewer than two visits</text>
+<circle cx="803" cy="243" r="9" fill="#1B2230"/>
+<text x="803" y="247.5" class="badge" text-anchor="middle">2</text>
+<text x="819" y="248" class="b">a score is missing</text>
+<text x="819" y="269" class="b">at the anchor</text>
+<circle cx="803" cy="294" r="9" fill="#1B2230"/>
+<text x="803" y="298.5" class="badge" text-anchor="middle">3</text>
+<text x="819" y="299" class="m" font-size="15">Δ &gt; τ<tspan dy="4.5" font-size="10.2">conf</tspan><tspan dy="-4.5">&#8202;</tspan><tspan class="sx">, where</tspan></text>
+<text x="819" y="320" class="m" font-size="15">Δ = max IQR(<tspan font-style="italic">x</tspan>)</text>
+<circle cx="803" cy="345" r="9" fill="#1B2230"/>
+<text x="803" y="349.5" class="badge" text-anchor="middle">4</text>
+<text x="819" y="350" class="b">fewer than</text>
+<text x="819" y="371" class="m" font-size="15">max(10, ⌈0.4<tspan font-style="italic">L</tspan><tspan dy="4.5" font-size="10.2">cond</tspan><tspan dy="-4.5">&#8202;</tspan>⌉)</text>
+<text x="819" y="392" class="b">runs pass</text>
+<text x="819" y="413" class="b">diagnostics</text>
+<path d="M795 435H959" stroke="#C9CFD8" stroke-width="1"/>
+<circle cx="803" cy="452" r="9" fill="#525C6B"/>
+<text x="803" y="456.5" class="badge" text-anchor="middle">5</text>
+<text x="819" y="457" class="b">score at a bound:</text>
+<text x="819" y="478" class="b">intervals only, no</text>
+<text x="819" y="499" class="b">event risks</text>
+<rect x="787" y="526" width="186" height="172" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="795" y="552" class="bb" font-size="15">Choosing τ<tspan dy="4.5" font-size="10.2">conf</tspan><tspan dy="-4.5">&#8202;</tspan></text>
+<text x="795" y="578" class="b">per CV fold, grid 0.05</text>
+<text x="795" y="600" class="b">to 0.60: 95% interval</text>
+<text x="795" y="622" class="b">coverage closest to 95%,</text>
+<text x="795" y="644" class="b">keeping at least half</text>
+<text x="795" y="666" class="b">of training anchors</text>
+<rect x="1004" y="92" width="172" height="620" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
+<circle cx="1026" cy="119" r="11" fill="#1B2230"/>
+<text x="1026" y="123.5" class="badge" text-anchor="middle">5</text>
+<text x="1044" y="124" class="h">OUTPUTS</text>
+<text x="1018" y="148" class="g">schema-validated</text>
+<text x="1018" y="188" class="bb">Latent states</text>
+<path d="M1022.0 231.5L1033.3 230.9L1044.7 229.8L1056.0 227.7L1067.3 224.2L1078.7 219.2L1090.0 213.7L1101.3 208.9L1112.7 205.7L1124.0 203.9L1135.3 202.9L1146.7 202.4L1158.0 202.2" stroke="#2E3F92" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<path d="M1022.0 226.0L1033.3 225.9L1044.7 225.8L1056.0 225.6L1067.3 225.2L1078.7 224.5L1090.0 223.1L1101.3 221.0L1112.7 218.5L1124.0 216.0L1135.3 214.3L1146.7 213.2L1158.0 212.6" stroke="#B35400" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<path d="M1022.0 235.8L1033.3 235.6L1044.7 235.1L1056.0 234.2L1067.3 232.5L1078.7 229.5L1090.0 225.1L1101.3 219.9L1112.7 215.3L1124.0 212.0L1135.3 210.0L1146.7 209.0L1158.0 208.5" stroke="#0B7A70" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+<path d="M1018 196V242H1162" stroke="#C9CFD8" stroke-width="1" fill="none"/>
+<text x="1018" y="272" class="bb">Forecasts</text>
+<text x="1018" y="292" class="g">one step and 180,</text>
+<text x="1018" y="312" class="g">365, 730 days</text>
+<path d="M1018 326V392H1162" stroke="#C9CFD8" stroke-width="1" fill="none"/>
+<path d="M1068 368L1158 326L1158 386Z" fill="#E6E8F3"/>
+<path d="M1068 368L1158 340L1158 372Z" fill="#C9CEE6" opacity="0.9"/>
+<path d="M1022 380L1044 375L1068 368L1068 368" stroke="#1B2230" stroke-width="2" fill="none"/>
+<path d="M1068 368L1158 356" stroke="#2E3F92" stroke-width="2.4" fill="none"/>
+<circle cx="1022" cy="380" r="3.5" fill="#1B2230"/>
+<circle cx="1044" cy="375" r="3.5" fill="#1B2230"/>
+<circle cx="1068" cy="368" r="3.5" fill="#1B2230"/>
+<path d="M1068 330V390" stroke="#525C6B" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="1018" y="424" class="bb">Event risk curves</text>
+<text x="1018" y="446" class="m" font-size="16"><tspan font-style="italic">P</tspan>(ΔMoCA ≤ −2)</text>
+<path d="M1018 458V520H1162" stroke="#C9CFD8" stroke-width="1" fill="none"/>
+<path d="M1022.0 512.0L1033.3 504.3L1044.7 497.9L1056.0 492.5L1067.3 488.1L1078.7 484.4L1090.0 481.3L1101.3 478.7L1112.7 476.6L1124.0 474.8L1135.3 473.4L1146.7 472.1L1158.0 471.1" stroke="#B35400" stroke-width="2.4" fill="none"/>
+<circle cx="1044.7" cy="497.9" r="3.5" fill="#B35400"/>
+<circle cx="1067.3" cy="488.1" r="3.5" fill="#B35400"/>
+<circle cx="1112.7" cy="476.6" r="3.5" fill="#B35400"/>
+<text x="1018" y="548" class="bb">Calibration</text>
+<text x="1018" y="568" class="g">PIT, CRPS, coverage</text>
+<rect x="1022" y="600" width="13" height="40" fill="#B9C0CC"/>
+<rect x="1039" y="594" width="13" height="46" fill="#B9C0CC"/>
+<rect x="1056" y="602" width="13" height="38" fill="#B9C0CC"/>
+<rect x="1073" y="596" width="13" height="44" fill="#B9C0CC"/>
+<rect x="1090" y="598" width="13" height="42" fill="#B9C0CC"/>
+<rect x="1107" y="603" width="13" height="37" fill="#B9C0CC"/>
+<rect x="1124" y="595" width="13" height="45" fill="#B9C0CC"/>
+<rect x="1141" y="599" width="13" height="41" fill="#B9C0CC"/>
+<path d="M1020 598H1158" stroke="#1B2230" stroke-width="1.5" stroke-dasharray="4 3"/>
+<path d="M1018 640H1162" stroke="#C9CFD8" stroke-width="1"/>
+<text x="1018" y="668" class="g">parity-checked</text>
+<path d="M187 392H202" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<path d="M516 392H531" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<path d="M759 392H774" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<path d="M984 392H999" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="24" y="734" width="1152" height="118" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
+<text x="44" y="766" class="h">EXECUTION</text>
+<text x="44" y="790" class="g">laptop, Docker</text>
+<text x="44" y="810" class="g">or Slurm array</text>
+<rect x="180" y="756" width="300" height="74" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="194" y="784" class="code">run --mode demo | full | shard</text>
+<text x="194" y="810" class="g">hash or stride shards, Slurm array</text>
+<path d="M482 793H502" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="506" y="756" width="176" height="74" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="520" y="784" class="code">aggregate-all</text>
+<text x="520" y="810" class="g">pools shard runs</text>
+<path d="M684 793H704" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="708" y="756" width="236" height="74" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="722" y="784" class="bb">cohort tables</text>
+<text x="722" y="810" class="g">forecasts, risks, calibration</text>
+<path d="M946 793H966" stroke="#6B7484" stroke-width="2" fill="none" marker-end="url(#ah)"/>
+<rect x="970" y="756" width="186" height="74" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<text x="984" y="784" class="code">parity-check</text>
+<text x="984" y="810" class="g">files and schemas</text>
+</svg>
