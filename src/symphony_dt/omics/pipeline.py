@@ -154,7 +154,6 @@ def build_omics_covariates(
     Returns per-patient pathway scores z_i (P<=10) and missing indicator.
     Training-only computations for standardization are respected per Methods.
     """
-    log = get_logger(__name__)
 
     ids_all = sorted(set(int(x) for x in patient_ids_all))
     ids_train = sorted(set(int(x) for x in train_patient_ids))

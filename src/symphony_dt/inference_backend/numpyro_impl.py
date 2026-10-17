@@ -220,7 +220,6 @@ def run_scaffold_numpyro(
         # Apply observation mask: only include logprob where observed and within bounds.
         y_obs = y  # (N,T,3) after transpose next
         mu_obs = jnp.transpose(mu_path, (1, 0, 2))  # (N,T,3)
-        y_obs = y_obs
         m = obs_mask
 
         # bounds check; if out of bounds, likelihood still possible under truncation but would be invalid for truncated distribution.

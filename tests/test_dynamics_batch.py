@@ -7,7 +7,6 @@ from symphony_dt.model.params import CouplingMatrix
 def test_batch_matches_scalar_calls() -> None:
     C = CouplingMatrix(c_mm=0.1, c_cm=0.0, c_cc=0.1, c_cn=0.0, c_nm=0.0, c_nn=0.1).as_array()
     sigma_xi = np.array([0.1, 0.1, 0.1])
-    dt = 30.0
 
     s = np.array([[0.0, 0.0, 0.0], [0.2, -0.1, 0.3]])
     r = np.array([[0.05, 0.05, 0.05], [0.1, 0.1, 0.1]])

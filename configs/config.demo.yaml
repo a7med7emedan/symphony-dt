@@ -4,7 +4,7 @@ run:
   outputs_root: outputs
   overwrite: false
 io:
-  input_dir: /Users/ahmed.hemedan/Downloads/symphony/paper/demo/symphony_pipeline_project_v2/symphony_runs/run_52239208571a/work/preprocessed_unzipped
+  input_dir: data/ppmi_preprocessed   # your local PPMI-derived tables; never commit them
   cohort: PDLIKE
   baseline_filename_pdlike: baseline_table_PDLiKE.csv
   clinic_filename_pdlike: clinic_visit_table_PDLiKE.csv

@@ -45,7 +45,6 @@ def build_horizon_dataset(
         g = g.sort_values(["t_days_since_baseline", "visit_id"]).reset_index(drop=True)
         if len(g) < 2:
             continue
-        times = g["t_days_since_baseline"].to_numpy(dtype=float)
         for n in range(len(g) - 1):
             a = g.loc[n]
             t_anchor = float(a["t_days_since_baseline"])
