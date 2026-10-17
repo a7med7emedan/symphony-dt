@@ -171,13 +171,15 @@
 <text x="819" y="457" class="b">score at a bound:</text>
 <text x="819" y="478" class="b">intervals only, no</text>
 <text x="819" y="499" class="b">event risks</text>
-<rect x="787" y="526" width="186" height="172" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
+<rect x="787" y="526" width="186" height="178" rx="8" fill="#FFFFFF" stroke="#C9CFD8" stroke-width="1"/>
 <text x="795" y="552" class="bb" font-size="15">Choosing τ<tspan dy="4.5" font-size="10.2">conf</tspan><tspan dy="-4.5">&#8202;</tspan></text>
 <text x="795" y="578" class="b">per CV fold, grid 0.05</text>
-<text x="795" y="600" class="b">to 0.60: 95% interval</text>
-<text x="795" y="622" class="b">coverage closest to 95%,</text>
+<text x="795" y="600" class="b">to 0.60: 90% interval</text>
+<text x="795" y="622" class="b">coverage closest to 90%,</text>
 <text x="795" y="644" class="b">keeping at least half</text>
 <text x="795" y="666" class="b">of training anchors</text>
+<rect x="795" y="674" width="166" height="22" rx="5" fill="#EEF0F4"/>
+<text x="801" y="689.5" class="code" style="font-size:12.5px">nuts select-tau-conf</text>
 <rect x="1004" y="92" width="172" height="620" rx="12" fill="#F4F6F9" stroke="#E1E5EB" stroke-width="1"/>
 <circle cx="1026" cy="119" r="11" fill="#1B2230"/>
 <text x="1026" y="123.5" class="badge" text-anchor="middle">5</text>
