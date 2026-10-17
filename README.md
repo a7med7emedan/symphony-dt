@@ -66,20 +66,20 @@ SYMPHONY is a hierarchical, nonlinear state-space model observed at irregular cl
 **Hierarchical progression drive.** Baseline covariates $d_i$ (age, sex) and optional omics scores $z_i$ set a per-participant drive, with partial pooling across the cohort:
 
 $$
-r_i = \mu_r + \Gamma d_i + A z_i + b_i, \qquad b_i \sim \mathcal{N}\left(0, \operatorname{diag}(\sigma_r^2)\right).
+r_i = \mu_r + \Gamma d_i + A z_i + b_i, \qquad b_i \sim \mathcal{N}\left(0, \mathrm{diag}(\sigma_r^2)\right).
 $$
 
 **Monotone stochastic dynamics.** Between visits separated by $\Delta$ days, the state can only progress, at a rate shaped by the other domains:
 
 $$
-s_i(t+\Delta) = s_i(t) + \Delta \cdot \operatorname{softplus}\left(r_i + C\,x_i(t)\right) \odot \xi_{i,t},
+s_i(t+\Delta) = s_i(t) + \Delta \cdot \mathrm{softplus}\left(r_i + C\,x_i(t)\right) \odot \xi_{i,t},
 \qquad
 \xi_{i,t} = \exp\left(-\tfrac{1}{2}\Delta\,\sigma_\xi^2 + \sqrt{\Delta}\,\sigma_\xi \odot \varepsilon_{i,t}\right),
 $$
 
 with $\varepsilon_{i,t} \sim \mathcal{N}(0, I_3)$. The multiplicative noise has mean one, so it widens uncertainty with elapsed time without biasing the drift. The coupling matrix $C$ has a fixed sparse topology: motor drives cognition and autonomic function, autonomic function drives cognition, and each domain has a self term. Nothing feeds back into the motor domain. This rules out cyclic feedback and limits the model to six free couplings.
 
-**Bounded observation model.** MDS-UPDRS Part III (0 to 132), MoCA (0 to 30, reversed) and SCOPA-AUT (0 to 69) are linked to the latent scale by a monotone link $h(p; a, b) = \sigma(a + b\,\operatorname{logit} p)$ with $b > 0$. Each score then follows a Gaussian truncated to its own support:
+**Bounded observation model.** MDS-UPDRS Part III (0 to 132), MoCA (0 to 30, reversed) and SCOPA-AUT (0 to 69) are linked to the latent scale by a monotone link $h(p; a, b) = \sigma(a + b\,\mathrm{logit} p)$ with $b > 0$. Each score then follows a Gaussian truncated to its own support:
 
 $$
 y^{(k)}_{i,t} \sim \mathcal{N}_{[L_k, U_k]}\left(L_k + (U_k - L_k)\,h\left(x^{(k)}_i(t); a_k, b_k\right),\ \sigma_k^2\right).
@@ -103,7 +103,7 @@ A forecast is shown only when it can be trusted ([`personalization/gating.py`](s
 
 1. the participant has fewer than two clinic visits;
 2. any endpoint is missing at the anchor visit;
-3. latent uncertainty $\Delta_{i,n} = \max_j \operatorname{IQR}\left(x_j(t_{i,n})\right)$ exceeds $\tau_{\text{conf}}$;
+3. latent uncertainty $\Delta_{i,n} = \max_j \mathrm{IQR}\left(x_j(t_{i,n})\right)$ exceeds $\tau_{\text{conf}}$;
 4. fewer than $\max\left(10, \lceil 0.4\,L_{\text{cond}} \rceil\right)$ conditional runs pass their diagnostics.
 
 A fifth rule keeps intervals but withholds threshold-event probabilities when an anchor score sits on a scale boundary.
