@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from symphony_dt.inference.store import PosteriorDrawSet, save_drawset
+from symphony_dt.inference_backend.likelihood import chain_method, observe_bounded
 from symphony_dt.logging import get_logger
 from symphony_dt.model.observation import SUPPORTS
 
@@ -213,26 +214,14 @@ def run_scaffold_numpyro(
         x_path = _sigmoid_jax(s_path, jnp)  # (T,N,3)
         mu_path = _mu_from_x_jax(x_path, a_u, b_u, a_q, b_q, a_s, b_s, jnp)  # (T,N,3)
 
-        # Likelihood with truncation via clamping (approx) + masking.
-        # NumPyro doesn't have a built-in stable TruncatedNormal in all versions; implement via Normal with masking and manual support check.
+        # Bounded likelihood: Normal truncated to each score's support, masked where missing.
         sig = jnp.array([sigma_u, sigma_q, sigma_s])
-
-        # Apply observation mask: only include logprob where observed and within bounds.
-        y_obs = y  # (N,T,3) after transpose next
         mu_obs = jnp.transpose(mu_path, (1, 0, 2))  # (N,T,3)
-        m = obs_mask
-
-        # bounds check; if out of bounds, likelihood still possible under truncation but would be invalid for truncated distribution.
-        # assume input data are in bounds (validated earlier); still clip for safety.
-        L = jnp.array([SUPPORTS["U"].L, SUPPORTS["Q"].L, SUPPORTS["S"].L])
-        U = jnp.array([SUPPORTS["U"].U, SUPPORTS["Q"].U, SUPPORTS["S"].U])
-        y_clip = jnp.clip(y_obs, L, U)
-
-        with numpyro.handlers.mask(mask=m):
-            numpyro.sample("y", dist.Normal(mu_obs, sig), obs=y_clip)
+        observe_bounded("y", mu_obs, sig, y, obs_mask)
 
     kernel = NUTS(model, target_accept_prob=cfg.target_accept_prob, max_tree_depth=cfg.max_tree_depth)
-    mcmc = MCMC(kernel, num_warmup=cfg.num_warmup, num_samples=cfg.num_samples, num_chains=cfg.num_chains, progress_bar=False)
+    mcmc = MCMC(kernel, num_warmup=cfg.num_warmup, num_samples=cfg.num_samples, num_chains=cfg.num_chains,
+                progress_bar=False, chain_method=chain_method(jax, cfg.num_chains))
     rng_key = jax.random.PRNGKey(int(cfg.seed))
     mcmc.run(rng_key)
     samples = mcmc.get_samples(group_by_chain=False)

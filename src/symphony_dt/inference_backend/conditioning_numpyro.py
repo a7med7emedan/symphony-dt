@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from symphony_dt.inference_backend.conditioning_store import ConditionalRunArtifacts, save_conditional_run
+from symphony_dt.inference_backend.likelihood import chain_method, observe_bounded
 from symphony_dt.logging import get_logger
 from symphony_dt.math.core import sigmoid, softplus
 from symphony_dt.model.params import CouplingMatrix
@@ -205,7 +206,8 @@ def run_conditioning_numpyro(
             if k < T - 1:
                 dt = jnp.maximum(t[k + 1] - t[k], 0.0)
                 Cx = C @ xk
-                drive = jnp.log1p(jnp.exp(r + Cx))  # softplus
+                z = r + Cx
+                drive = jnp.log1p(jnp.exp(-jnp.abs(z))) + jnp.maximum(z, 0.0)  # stable softplus
                 drift = -0.5 * dt * (sx ** 2)
                 diff = jnp.sqrt(dt) * (sx * eps[k])
                 xi = jnp.exp(drift + diff)
@@ -213,25 +215,16 @@ def run_conditioning_numpyro(
 
         x_path = jnp.stack(xs, axis=0)  # (T,3)
 
-        # likelihood on observed y with masking, approximating truncation by clipping (inputs already bounded)
-        mu = []
-        for k in range(T):
-            mu_k = mu_from_x_jax(x_path[k], obs)  # uses numpy under hood; convert
-            mu.append(mu_k)
-        mu = jnp.stack(mu, axis=0)
-
+        # Bounded likelihood: Normal truncated to each score's support, masked where missing.
+        mu = jnp.stack([mu_from_x_jax(x_path[k], obs) for k in range(T)], axis=0)  # (T,3)
         sig = jnp.array([obs.sigma_u, obs.sigma_q, obs.sigma_s])
-        L = jnp.array([SUPPORTS["U"].L, SUPPORTS["Q"].L, SUPPORTS["S"].L])
-        U = jnp.array([SUPPORTS["U"].U, SUPPORTS["Q"].U, SUPPORTS["S"].U])
-        y_clip = jnp.clip(y, L, U)
-
-        with numpyro.handlers.mask(mask=m):
-            numpyro.sample("y", dist.Normal(mu, sig), obs=y_clip)
+        observe_bounded("y", mu, sig, y, m)
 
         numpyro.deterministic("x_tn", x_path[-1])
 
     kernel = NUTS(model, target_accept_prob=cfg.target_accept_prob, max_tree_depth=cfg.max_tree_depth)
-    mcmc = MCMC(kernel, num_warmup=cfg.num_warmup, num_samples=cfg.num_samples, num_chains=cfg.num_chains, progress_bar=False)
+    mcmc = MCMC(kernel, num_warmup=cfg.num_warmup, num_samples=cfg.num_samples, num_chains=cfg.num_chains,
+                progress_bar=False, chain_method=chain_method(jax, cfg.num_chains))
 
     rng_key = jax.random.PRNGKey(int(cfg.seed) + int(patient_id) * 1000 + int(visit_index) * 10 + int(global_draw_index))
     init_params = None
