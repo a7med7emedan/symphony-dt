@@ -1,23 +1,11 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
-
-
-def _json_safe(v):
-    """Convert NaN/inf to None for JSON serialization."""
-    if v is None:
-        return None
-    try:
-        fv = float(v)
-        if not math.isfinite(fv):
-            return None
-        return fv
-    except Exception:
-        return v
 import pandas as pd
 
 from symphony_dt.inference_backend.conditioning_store import ConditionalRunArtifacts, save_conditional_run
@@ -26,6 +14,17 @@ from symphony_dt.math.core import sigmoid, softplus
 from symphony_dt.model.params import CouplingMatrix
 from symphony_dt.model.observation import ObservationParams, SUPPORTS, mu_from_x
 from symphony_dt.personalization.conditioning import ConditioningRunDiagnostics
+
+
+def _json_safe(v):
+    """Convert NaN/inf to None for JSON serialization."""
+    if v is None:
+        return None
+    try:
+        fv = float(v)
+    except (TypeError, ValueError):
+        return v
+    return fv if math.isfinite(fv) else None
 
 
 @dataclass(frozen=True)
@@ -162,7 +161,7 @@ def run_conditioning_numpyro(
         eps = 1e-6
         x = jnp.clip(x, eps, 1.0 - eps)
 
-        def sigmoid(z):
+        def sigmoid(z):  # noqa: F811  JAX-safe local version, shadows the NumPy one on purpose
             return 1.0 / (1.0 + jnp.exp(-z))
 
         def logit(p):
@@ -241,7 +240,9 @@ def run_conditioning_numpyro(
         med = np.median(warm_start_samples, axis=0)
         init_params = {"s0": jnp.array(med[:3])}  # minimal warm start
 
-    mcmc.run(rng_key, init_params=init_params)
+    # accept_prob is only recorded when requested; the Methods gate needs it.
+    # Collecting an extra field does not change the draws.
+    mcmc.run(rng_key, init_params=init_params, extra_fields=("accept_prob",))
     samples = mcmc.get_samples(group_by_chain=True)  # (chains, draws, ...)
     extra = mcmc.get_extra_fields(group_by_chain=True)
 

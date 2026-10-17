@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import math
+
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -77,6 +79,16 @@ def _sample_obs_from_mu(mu: np.ndarray, obs: ObservationParams, rng: np.random.G
     return y
 
 
+def _diag_value(diag: Dict[str, Any], key: str, fail_value: float) -> float:
+    """Read a diagnostic as float; absent, None or non-finite values return the failing value."""
+    v = diag.get(key)
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return fail_value
+    return f if math.isfinite(f) else fail_value
+
+
 def load_conditioning_mixture(
     *,
     conditional_root: Path,
@@ -99,12 +111,13 @@ def load_conditioning_mixture(
         except FileNotFoundError:
             continue
         diag = art.diagnostics
+        # A missing or undefined diagnostic (None, NaN) must fail the gate, never crash it.
         crd = ConditioningRunDiagnostics(
-            divergences=int(diag.get("divergences", 1)),
-            accept_prob_mean=float(diag.get("accept_prob_mean", 0.0)),
-            rhat_r_m=float(diag.get("rhat_r_m", 99.0)),
-            rhat_r_c=float(diag.get("rhat_r_c", 99.0)),
-            rhat_r_n=float(diag.get("rhat_r_n", 99.0)),
+            divergences=int(_diag_value(diag, "divergences", 1.0)),
+            accept_prob_mean=_diag_value(diag, "accept_prob_mean", 0.0),
+            rhat_r_m=_diag_value(diag, "rhat_r_m", 99.0),
+            rhat_r_c=_diag_value(diag, "rhat_r_c", 99.0),
+            rhat_r_n=_diag_value(diag, "rhat_r_n", 99.0),
         )
         runs.append(
             ConditionalRun(
@@ -144,7 +157,6 @@ def posterior_predict_instance(
       (pred_dict or None if suppressed, reasons)
     pred_dict has keys: pred_mean_*, pred_p05_*, pred_p95_* for endpoints.
     """
-    log = get_logger(__name__)
     drawset = load_drawset(drawset_dir)
 
     mix, min_pass = load_conditioning_mixture(
