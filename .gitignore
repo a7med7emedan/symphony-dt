@@ -30,3 +30,4 @@ symphony-quickstart/
 !tests/**/*.csv
 .coverage
 .env
+coverage.xml

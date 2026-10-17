@@ -1,20 +1,24 @@
 # Keep the build context to code only. Data and outputs must never enter an image.
-.git
-.venv
+# Allow-list: ignore everything, then re-admit only what the Dockerfile copies.
+*
+!pyproject.toml
+!README.md
+!LICENSE
+!NOTICE
+!src
+!configs
+
+# Never admit caches, build output or data, even inside the allowed folders.
 **/__pycache__
-**/*.pyc
-*.egg-info
-.pytest_cache
-.ruff_cache
-.coverage
-outputs/
-data/
-symphony-quickstart/
-notebooks/
-slurm/
-tests/
-*.zip
-*.csv
-*.parquet
-.env
-.env.*
+**/*.py[cod]
+**/*.egg-info
+**/.pytest_cache
+**/.ruff_cache
+**/*.csv
+**/*.parquet
+**/*.zip
+**/*.feather
+**/*.h5
+**/*.pkl
+**/.env
+**/.env.*

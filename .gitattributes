@@ -1,0 +1,43 @@
+# Normalise line endings: LF in the repository and in every checkout, Windows included.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Byte-exact inputs. preprocessing/report.py records SHA-256 hashes of input tables
+# (*.csv), preprocessing_audit.json and data_dictionary.md. Any such file kept under
+# tests/ must reach every platform byte for byte, so it is never converted.
+tests/**/*.csv                       -text
+tests/**/*.json                      -text
+tests/**/preprocessing_audit.json    -text
+tests/**/data_dictionary.md          -text
+tests/**/fixtures/**                 -text
+
+# Binary formats: no diff, no line-ending conversion.
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.pdf      binary
+*.zip      binary
+*.gz       binary
+*.tgz      binary
+*.bz2      binary
+*.xz       binary
+*.parquet  binary
+*.feather  binary
+*.npy      binary
+*.npz      binary
+*.pkl      binary
+*.pickle   binary
+*.h5       binary
+*.hdf5     binary
+*.nc       binary
+*.whl      binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+*.otf      binary

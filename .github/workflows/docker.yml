@@ -1,0 +1,136 @@
+name: docker
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/a7med7emedan/symphony-dt
+
+jobs:
+  build:
+    name: build (INFERENCE=${{ matrix.inference }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        inference: ["0", "1"]
+    env:
+      LOCAL_TAG: symphony-dt:ci
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          build-args: |
+            INFERENCE=${{ matrix.inference }}
+          tags: ${{ env.LOCAL_TAG }}
+          load: true
+          push: false
+          cache-from: type=gha,scope=symphony-dt-inference-${{ matrix.inference }}
+          cache-to: type=gha,mode=max,scope=symphony-dt-inference-${{ matrix.inference }}
+
+      - name: CLI responds
+        run: docker run --rm "$LOCAL_TAG" --help
+
+      - name: Runs as non-root
+        run: |
+          uid="$(docker run --rm --entrypoint id "$LOCAL_TAG" -u)"
+          echo "uid=$uid"
+          test "$uid" != "0"
+
+      - name: No data baked into the image
+        run: |
+          hits=$(docker run --rm --entrypoint sh "$LOCAL_TAG" -c 'find /opt/symphony-dt /work /home \( -name "*.csv" -o -name "*.parquet" -o -name "*.zip" \) 2>/dev/null | wc -l')
+          test "$hits" = "0"
+
+      - name: Example configs are present
+        run: docker run --rm --entrypoint test "$LOCAL_TAG" -f /opt/symphony-dt/configs/config.demo.yaml
+
+      - name: Synthetic quickstart inside the container
+        run: |
+          mkdir -p "$RUNNER_TEMP/qs" && chmod 777 "$RUNNER_TEMP/qs"
+          docker run --rm -v "$RUNNER_TEMP/qs:/work" "$LOCAL_TAG" quickstart --workdir /work/run --n-patients 30
+          ls "$RUNNER_TEMP/qs/run"
+
+  publish:
+    name: publish (INFERENCE=${{ matrix.inference }})
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - inference: "0"
+            suffix: ""
+          - inference: "1"
+            suffix: "-inference"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          flavor: |
+            latest=auto
+            suffix=${{ matrix.suffix }},onlatest=true
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=symphony-dt
+            org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          build-args: |
+            INFERENCE=${{ matrix.inference }}
+            VERSION=${{ steps.version.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          push: true
+          cache-from: type=gha,scope=symphony-dt-inference-${{ matrix.inference }}
