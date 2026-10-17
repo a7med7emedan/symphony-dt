@@ -22,3 +22,11 @@ ENV/
 
 # Runtime outputs
 outputs/
+
+# Local data and generated results: never commit PPMI-derived files
+data/
+symphony-quickstart/
+*.csv
+!tests/**/*.csv
+.coverage
+.env

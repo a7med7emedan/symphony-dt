@@ -4,12 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "symphony-dt"
-version = "0.1.0"
-description = "SYMPHONY clinic-updated digital twin (PPMI) — production pipeline package"
+version = "0.2.0"
+description = "SYMPHONY: a clinic-updated Bayesian digital twin for Parkinson's disease progression (PPMI-shaped data)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
-authors = [{ name = "SYMPHONY" }]
+authors = [{ name = "Ahmed Hemedan" }]
+keywords = ["digital twin", "parkinsons disease", "ppmi", "bayesian", "numpyro", "forecasting", "hpc", "reproducibility"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
 dependencies = [
   "pandas>=2.0",
   "numpy>=1.24",
@@ -21,6 +33,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest>=7.0",
+  "pytest-cov>=4.0",
+  "ruff>=0.4",
 ]
 
 inference = [
@@ -28,6 +42,10 @@ inference = [
   "jax>=0.4",
   "jaxlib>=0.4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/a7med7emedan/symphony-dt"
+Issues = "https://github.com/a7med7emedan/symphony-dt/issues"
 
 [project.scripts]
 symphony-dt = "symphony_dt.cli:app"
@@ -41,3 +59,13 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+# Correctness-focused set: undefined names, syntax errors, real bugs.
+select = ["F", "E9", "PLW0127"]
+ignore = ["F401"]

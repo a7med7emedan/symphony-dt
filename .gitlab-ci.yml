@@ -1,6 +1,7 @@
-image: python:3.11-slim
+image: python:3.12-slim
 
 stages:
+  - lint
   - test
 
 cache:
@@ -10,6 +11,12 @@ cache:
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
+lint:
+  stage: lint
+  script:
+    - pip install "ruff>=0.4"
+    - ruff check .
+
 test:
   stage: test
   script:
@@ -17,3 +24,4 @@ test:
     - pip install -U pip
     - pip install -e ".[dev]"
     - pytest
+    - symphony-dt quickstart --workdir /tmp/qs --n-patients 40

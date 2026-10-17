@@ -1,0 +1,20 @@
+# Keep the build context to code only. Data and outputs must never enter an image.
+.git
+.venv
+**/__pycache__
+**/*.pyc
+*.egg-info
+.pytest_cache
+.ruff_cache
+.coverage
+outputs/
+data/
+symphony-quickstart/
+notebooks/
+slurm/
+tests/
+*.zip
+*.csv
+*.parquet
+.env
+.env.*
