@@ -14,6 +14,8 @@ class ColumnRule:
     allowed: Optional[Sequence[Any]] = None
     min_value: Optional[float] = None
     max_value: Optional[float] = None
+    # Deprecated names accepted in place of `name`, for tables written by an earlier release.
+    aliases: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -43,7 +45,23 @@ def _coerce_series(s: pd.Series, dtype: Any) -> pd.Series:
     return s.astype(dtype)
 
 
+def _resolve_aliases(df: pd.DataFrame, contract: TableContract) -> pd.DataFrame:
+    """Fill each required column from its first present alias when the canonical name is absent."""
+    out = df
+    for rule in contract.required:
+        if rule.name in out.columns:
+            continue
+        for alias in rule.aliases:
+            if alias in out.columns:
+                if out is df:
+                    out = df.copy()
+                out[rule.name] = out[alias]
+                break
+    return out
+
+
 def validate_table(df: pd.DataFrame, contract: TableContract) -> pd.DataFrame:
+    df = _resolve_aliases(df, contract)
     missing = [c for c in contract.required_names() if c not in df.columns]
     if missing:
         raise ValueError(f"{contract.table_name}: missing required columns: {missing}")

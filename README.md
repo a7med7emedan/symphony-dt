@@ -47,7 +47,7 @@ The `results/` folder then holds 22 standardised tables, among them:
 | `forecast_one_step_predictions.csv` | next-visit forecasts with central 90% intervals (5th to 95th percentile) |
 | `forecast_horizon_long_uq_refined.csv` | 180, 365 and 730 day forecasts with 90% intervals and their widths |
 | `forecast_risk_curves.csv` | probability of a clinically meaningful change per endpoint and horizon |
-| `evaluation_coverage.csv`, `evaluation_mae.csv` | interval coverage and error, overall and by sex and age quartile |
+| `evaluation_coverage.csv`, `evaluation_mae.csv` | coverage of the 90% interval (`cov90_*`) and error, overall and by sex and age quartile |
 | `personalization_diagnostics.csv`, `clinician_summary_risk_table.csv` | gating diagnostics and a clinician-facing risk summary |
 
 With Docker:
@@ -108,11 +108,17 @@ A forecast is shown only when it can be trusted ([`personalization/gating.py`](s
 
 A fifth rule keeps intervals but withholds threshold-event probabilities when an anchor score sits on a scale boundary.
 
-[`select_tau_conf`](src/symphony_dt/trust/tau_conf.py) chooses $\tau_{\text{conf}}$ for a training fold on a grid from 0.05 to 0.60. It picks the value whose empirical interval coverage is closest to the target, while keeping at least half of the anchors. Pass the chosen value to `nuts forecast --tau-conf`. The default of 1.0 leaves rule 3 inactive, because the interquartile range on the unit scale cannot exceed 1.
+`symphony-dt nuts select-tau-conf` chooses $\tau_{\text{conf}}$ on a training fold ([`trust/tau_conf.py`](src/symphony_dt/trust/tau_conf.py)). For each training-fold anchor, it computes $\Delta_{i,n}$ and the one-step central 90% interval from the conditioning outputs, with rule 3 switched off. Anchors suppressed by rules 1, 2 or 4 are left out, since no threshold would show them.
+
+On a grid from 0.05 to 0.60, it picks the value whose empirical coverage is closest to 0.90, while keeping at least half of the anchors. The target matches the interval actually produced: every engine writes the 5th and 95th percentiles. If no grid value keeps half of the anchors, the value that keeps the most is used and the file records `"feasible": false`.
+
+The command writes the chosen value, with the coverage and fraction kept at each grid point, to JSON. `nuts forecast --tau-conf-json` reads that file, and `--tau-conf` sets a value directly. With neither, the threshold is 1.0 and a warning is printed. That value leaves rule 3 inactive, because the interquartile range on the unit scale cannot exceed 1. Posterior forecasts record $\Delta_{i,n}$ for each anchor in a `delta_iqr` column.
 
 ## Calibration and evaluation
 
-Forecasts are scored by mean absolute error and interval coverage, overall and stratified by sex and age quartile. For posterior draws, the package also provides CRPS and probability integral transform (PIT) values under truncation, with a Kolmogorov distance to uniformity. Trajectory clusters and state binning use fixed cut points, so results do not depend on how patients were sharded.
+Forecasts are scored by mean absolute error and interval coverage, overall and stratified by sex and age quartile. Coverage is the share of observed scores inside the central 90% interval, from the 5th to the 95th percentile, in columns `cov90_updrs3`, `cov90_moca`, `cov90_scopa` and `cov90_overall`.
+
+Releases up to 0.2.0 wrote the same 90% coverage under the name `cov95_*`. Those columns are still written, with identical values, as deprecated aliases for one release. The table contract, `parity-check` and `aggregate-all` accept either name, so older run directories can be validated and merged with new ones. For posterior draws, the package also provides CRPS and probability integral transform (PIT) values under truncation, with a Kolmogorov distance to uniformity. Trajectory clusters and state binning use fixed cut points, so results do not depend on how patients were sharded.
 
 ## Data governance
 
@@ -177,10 +183,17 @@ symphony-dt nuts condition --config configs/config.demo.yaml --drawset-dir outpu
   --out-dir outputs/cond_fold0_v5 --mode demo --visit-index 5 --l-cond 10 --seed 0 \
   --num-warmup 50 --num-samples 50 --num-chains 1
 
+symphony-dt nuts select-tau-conf --config configs/config.demo.yaml --drawset-dir outputs/scaffold_fold0 \
+  --conditional-dir outputs/cond_fold0_v5 --out-json outputs/tau_conf_fold0_v5.json \
+  --fold-id 0 --visit-index 5 --l-cond 10 --n-draws-predictive 200 --seed 0
+
 symphony-dt nuts forecast --config configs/config.demo.yaml --drawset-dir outputs/scaffold_fold0 \
   --conditional-dir outputs/cond_fold0_v5 --out-results-dir outputs/posterior_v5 --mode demo \
-  --visit-index 5 --l-cond 10 --n-draws-predictive 200 --seed 0
+  --visit-index 5 --l-cond 10 --n-draws-predictive 200 --seed 0 \
+  --tau-conf-json outputs/tau_conf_fold0_v5.json
 ```
+
+`select-tau-conf` uses the training-fold participants that have conditioning outputs. For a real analysis, condition with `--mode full` or in shards before selecting. Use the same `--fold-id` as `fit-scaffold`, and the same `--visit-index` and `--l-cond` throughout.
 
 Choose a `--visit-index` that exists for each patient. Participants with too few visits are skipped, not failed. The values above are smoke-test budgets. Use at least 4 chains and several hundred warm-up and sampling iterations for real analyses.
 
@@ -213,7 +226,7 @@ symphony-dt parity-check --run-dir "$RUN_DIR"
 
 ## Quality and automation
 
-- **Tests.** `pytest` covers the dynamics, observation model, truncated normal, gating, $\tau_{\text{conf}}$ selection, sharding and aggregation. It also runs an end-to-end NUTS fit, condition and forecast on synthetic data.
+- **Tests.** `pytest` covers the dynamics, observation model, truncated normal, gating, $\tau_{\text{conf}}$ selection and its command, the coverage column aliases, sharding and aggregation. It also runs an end-to-end NUTS fit, condition and forecast on synthetic data.
 - **CI** ([`ci.yml`](.github/workflows/ci.yml)). This runs ruff, then tests on Linux (Python 3.10 to 3.12), macOS and Windows, then the full suite with NumPyro and JAX, then a clean-install quickstart.
 - **Container** ([`docker.yml`](.github/workflows/docker.yml)). This builds both images with layer caching and checks they run as non-root and contain no data files. It then runs the quickstart inside each one and publishes to GHCR on version tags.
 - **Security.** CodeQL analysis, Dependabot updates for pip, Actions and Docker, and a [security policy](SECURITY.md).

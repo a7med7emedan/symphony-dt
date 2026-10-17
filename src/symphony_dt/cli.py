@@ -26,6 +26,7 @@ from symphony_dt.evaluation.stratified import (
     evaluation_stratified_coverage_table,
     evaluation_stratified_mae_table,
 )
+from symphony_dt.evaluation.metrics import add_deprecated_coverage_aliases
 from symphony_dt.evaluation.tables import evaluation_coverage_table, evaluation_mae_table
 from symphony_dt.forecast.derive import (
     build_horizon_states,
@@ -242,7 +243,9 @@ def run(
         evaluation_stratified_coverage_table(pred1, baseline, clinic, "one_step", strat_cfg),
         evaluation_stratified_coverage_table(predh, baseline, clinic, "horizon_long", strat_cfg),
     ], ignore_index=True)
-    cov = pd.concat([cov_base.assign(stratum_type="", stratum_value=""), cov_strat], ignore_index=True)
+    cov = add_deprecated_coverage_aliases(
+        pd.concat([cov_base.assign(stratum_type="", stratum_value=""), cov_strat], ignore_index=True)
+    )
     write_table_atomic(out_results / "evaluation_coverage.csv", cov)
 
     # Clinical + reporting tables
@@ -356,6 +359,8 @@ def parity_check(
     """Validate that a run directory contains required outputs and that key schemas validate."""
     configure_logging("INFO")
     res = parity_check_run_dir(run_dir=run_dir, notebook=notebook)
+    for w in res.warnings:
+        console.print(f"[yellow]Warning[/yellow] {w}")
     if res.passed:
         console.print("[bold green]OK[/bold green] Parity check passed.")
         return
@@ -425,13 +430,15 @@ def aggregate_evaluation(
         if p_mae.exists():
             mae_tables.append(pd.read_csv(p_mae))
         if p_cov.exists():
-            cov_tables.append(pd.read_csv(p_cov))
+            cov_tables.append(add_deprecated_coverage_aliases(pd.read_csv(p_cov)))
     if not mae_tables or not cov_tables:
         raise typer.BadParameter("Missing evaluation tables under run dirs.")
     mae_all = pd.concat(mae_tables, ignore_index=True)
     cov_all = pd.concat(cov_tables, ignore_index=True)
     mae_out = mae_all.groupby("scope", dropna=False).mean(numeric_only=True).reset_index()
-    cov_out = cov_all.groupby(["scope","stratum_type","stratum_value"], dropna=False).mean(numeric_only=True).reset_index()
+    cov_out = add_deprecated_coverage_aliases(
+        cov_all.groupby(["scope", "stratum_type", "stratum_value"], dropna=False).mean(numeric_only=True).reset_index()
+    )
     write_table_atomic(out_dir / "evaluation_mae.csv", mae_out)
     write_table_atomic(out_dir / "evaluation_coverage.csv", cov_out)
     console.print(f"[bold green]OK[/bold green] Wrote evaluation aggregates to: {out_dir}")

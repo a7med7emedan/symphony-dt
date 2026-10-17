@@ -155,7 +155,8 @@ def posterior_predict_instance(
 
     Returns:
       (pred_dict or None if suppressed, reasons)
-    pred_dict has keys: pred_mean_*, pred_p05_*, pred_p95_* for endpoints.
+    pred_dict has keys: pred_mean_*, pred_p05_*, pred_p95_* for endpoints, and delta_iqr,
+    the latent uncertainty Delta that gating rule 3 compares with tau_conf.
     """
     drawset = load_drawset(drawset_dir)
 
@@ -276,6 +277,7 @@ def posterior_predict_instance(
         "pred_mean_scopa": float(mean[2]),
         "pred_p05_scopa": float(p05[2]),
         "pred_p95_scopa": float(p95[2]),
+        "delta_iqr": float(dec.delta_iqr) if dec.delta_iqr is not None else float("nan"),
         "engine": "posterior_sim",
     }
     # if boundary rule suppressed events, that affects event-prob reporting later; forecasts still ok.
