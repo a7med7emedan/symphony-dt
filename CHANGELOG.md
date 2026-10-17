@@ -7,6 +7,7 @@
 - Missing endpoints are replaced by a safe value before scoring and then masked, so they contribute neither log density nor NaN gradients.
 - Conditioning used `log1p(exp(z))` for the softplus drive, which overflows for large `z`. It now uses the stable form, matching the scaffold.
 - `symphony_dt.__version__` reported 0.1.0 while the package was 0.2.0. It is now read from the installed package metadata.
+- README equations used `\operatorname`, which GitHub's maths renderer rejects, so they showed as red error boxes. They now use `\mathrm`.
 - `select_tau_conf` targeted 95% coverage while every engine produces central 90% intervals. The target is now 0.90. Missing target scores are skipped rather than counted as misses.
 
 ### Changed
@@ -23,7 +24,7 @@
 - `symphony-dt --version`, and help text for the top-level command and the `nuts` group.
 - Chains run in parallel only when JAX has one device per chain, otherwise sequentially, without a warning.
 - Tests for the bounded likelihood against the closed-form truncated normal density, and for the version flag.
-- Logo, wordmark and method figure under `docs/assets/`.
+- Logo, wordmark and method figure under `docs/assets/`. The logo is a tulip, the Parkinson's disease symbol, whose right half is a digital twin drawn as posterior samples. Logo and wordmark adapt to dark mode.
 - `codemeta.json`, a richer `CITATION.cff` abstract, and expanded package keywords and project links.
 
 ## 0.2.0
