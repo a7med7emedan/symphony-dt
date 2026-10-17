@@ -61,11 +61,33 @@ from symphony_dt.utils.sharding import assign_patients_to_shard
 from symphony_dt.utils.subset import select_demo_patient_ids
 from symphony_dt.utils.subset_clinical import select_demo_patient_ids_clinical_best
 
-app = typer.Typer(add_completion=False)
+app = typer.Typer(
+    add_completion=False,
+    help="SYMPHONY: clinic-updated Bayesian digital twin for Parkinson's disease (PPMI-shaped tables).",
+)
 
 from symphony_dt.nuts_cli import app as nuts_app
-app.add_typer(nuts_app, name="nuts")
+app.add_typer(
+    nuts_app,
+    name="nuts",
+    help="Bayesian personalisation with NUTS: fit the scaffold, condition per patient, forecast. Needs [inference].",
+)
 console = Console()
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        from symphony_dt import __version__
+
+        console.print(f"symphony-dt {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _main(
+    version: bool = typer.Option(False, "--version", callback=_version_callback, is_eager=True, help="Show the version and exit."),
+) -> None:
+    pass
 
 
 @app.command()
@@ -263,7 +285,10 @@ def quickstart(
     data_dir = workdir / "data"
     write_synthetic_inputs(data_dir, n_patients=n_patients)
     cfg_path = workdir / "config.synthetic.yaml"
-    cfg_path.write_text(_QUICKSTART_CONFIG.format(outputs=(workdir / "outputs").as_posix(), data=data_dir.as_posix()))
+    cfg_path.write_text(_QUICKSTART_CONFIG.format(
+        # JSON strings are valid double-quoted YAML scalars, so any path parses safely.
+        outputs=json.dumps((workdir / "outputs").as_posix()), data=json.dumps(data_dir.as_posix())
+    ), encoding="utf-8")
     run(config=cfg_path, mode="demo", shard_id=None, num_shards=None, notebook=None, input_dir=None)
     run_dirs = sorted((workdir / "outputs").glob("symphony-dt__*__demo"))
     res = parity_check_run_dir(run_dir=run_dirs[-1], notebook=None)

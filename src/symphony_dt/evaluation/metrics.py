@@ -53,7 +53,10 @@ def mae_by_patient(pred: pd.DataFrame) -> pd.DataFrame:
 
 def interval_coverage_by_patient(pred: pd.DataFrame) -> pd.DataFrame:
     """
-    95% interval coverage per patient (participant-level average).
+    Coverage of the [pred_p05, pred_p95] interval per patient (participant-level average).
+
+    Every forecast engine writes the 5th and 95th percentiles, so the nominal level is 90%.
+    The output columns keep the historical cov95_* names for schema compatibility.
 
     Requires:
       y_target_* and pred_p05_*, pred_p95_* columns.

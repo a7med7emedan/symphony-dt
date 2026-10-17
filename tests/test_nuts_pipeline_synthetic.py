@@ -16,7 +16,7 @@ def test_nuts_fit_condition_forecast_on_synthetic(tmp_path):
     qs = tmp_path / "qs"
     assert runner.invoke(app, ["quickstart", "--workdir", str(qs), "--n-patients", "20"]).exit_code == 0
     cfg = qs / "config.synthetic.yaml"
-    cfg.write_text(cfg.read_text().replace("n_patients: 25", "n_patients: 2"))
+    cfg.write_text(cfg.read_text(encoding="utf-8").replace("n_patients: 25", "n_patients: 2"), encoding="utf-8")
     scaffold, cond, post = tmp_path / "scaffold", tmp_path / "cond", tmp_path / "post"
 
     r = runner.invoke(app, ["nuts", "fit-scaffold", "--config", str(cfg), "--fold-id", "0", "--out-dir", str(scaffold),
@@ -29,7 +29,7 @@ def test_nuts_fit_condition_forecast_on_synthetic(tmp_path):
     diags = list(cond.rglob("diagnostics.json"))
     assert diags, "conditioning wrote no diagnostics"
     for p in diags:
-        text = p.read_text()
+        text = p.read_text(encoding="utf-8")
         assert "NaN" not in text and "Infinity" not in text
         d = json.loads(text)
         assert d["accept_prob_mean"] is not None  # recorded since accept_prob is requested from NumPyro

@@ -10,7 +10,7 @@ def write_table_atomic(path: Path, df: pd.DataFrame) -> None:
     """Shard-safe atomic write: write to temp then rename."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    df.to_csv(tmp, index=False)
+    df.to_csv(tmp, index=False, lineterminator="\n")
     tmp.replace(path)
 
 

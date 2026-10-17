@@ -55,7 +55,7 @@ def create_run_context(
 
 def export_dataframe(path: Path, df: pd.DataFrame) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False)
+    df.to_csv(path, index=False, lineterminator="\n")
 
 
 def export_json(path: Path, obj: Any) -> None:
