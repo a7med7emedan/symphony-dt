@@ -234,9 +234,9 @@ def test_posterior_round_trip(tmp_path):
     import arviz as az
 
     mu = {"mu": np.random.default_rng(0).normal(size=(2, 50))}
-    try:
+    if int(az.__version__.split(".")[0]) >= 1:
         idata = az.from_dict({"posterior": mu})
-    except TypeError:  # ArviZ before 1.0
+    else:  # ArviZ 0.x
         idata = az.from_dict(posterior=mu)
     path = write_posterior(idata, tmp_path / "p.nc")
-    assert read_posterior(path).posterior["mu"].shape == (2, 50)
+    assert read_posterior(path)["posterior"]["mu"].shape == (2, 50)
