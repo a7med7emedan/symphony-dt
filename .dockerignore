@@ -1,0 +1,2 @@
+# The image installs the released wheel from PyPI, so the build needs no repository files.
+*

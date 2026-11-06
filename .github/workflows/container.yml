@@ -1,0 +1,144 @@
+name: Container
+
+# Builds the symphony-dt image from the released wheel on PyPI and publishes it to ghcr.io.
+# It runs after a successful Release run for a final tag, or by hand for a version already on PyPI.
+# Each platform builds natively, then one multi-platform tag points at both images.
+
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "A final version already on PyPI, for example 2.1.0"
+        required: true
+      latest:
+        description: "Also move the latest tag"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/a7med7emedan/symphony-dt
+
+jobs:
+  resolve:
+    name: Resolve the version on PyPI
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && !contains(github.event.workflow_run.head_branch, 'rc'))
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      latest: ${{ steps.v.outputs.latest }}
+    steps:
+      - id: v
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_LATEST: ${{ inputs.latest }}
+          TAG: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          version="${INPUT_VERSION:-${TAG#v}}"
+          echo "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "not a final version: $version"; exit 1; }
+          # The PyPI index can lag the upload by a few minutes.
+          for i in $(seq 1 30); do
+            pip download --no-deps --no-cache-dir -q -d wheel "symphony-dt==$version" && break
+            echo "waiting for symphony-dt $version on PyPI ($i)"; sleep 20
+          done
+          ls wheel/symphony_dt-"$version"-py3-none-any.whl
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "latest=${INPUT_LATEST:-true}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.platform }}
+    needs: resolve
+    strategy:
+      matrix:
+        include:
+          - {platform: linux/amd64, runner: ubuntu-24.04, slug: amd64}
+          - {platform: linux/arm64, runner: ubuntu-24.04-arm, slug: arm64}
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550  # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          build-args: VERSION=${{ needs.resolve.outputs.version }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          provenance: false
+      - name: Smoke test the pushed image
+        env:
+          REF: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          mkdir -p smoke && cd smoke
+          run() { docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/work "$REF" "$@"; }
+          run check | tee check.txt
+          grep -q "symphony-dt $VERSION" check.txt
+          run simulate --n 12 --seed 1 --out sim
+          run fit sim/stan_data.json --out fit --chains 2 --chain-ids 1,2 --warmup 20 --draws 20
+          ls fit/chains
+      - name: Record the digest
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: mkdir -p digests && touch "digests/${DIGEST#sha256:}"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: digest-${{ matrix.slug }}
+          path: digests/*
+          retention-days: 1
+
+  publish:
+    name: Tag and attest the multi-platform image
+    needs: [resolve, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          pattern: digest-*
+          merge-multiple: true
+          path: digests
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550  # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: tag
+        name: Create the tags
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+          LATEST: ${{ needs.resolve.outputs.latest }}
+        run: |
+          tags=(-t "$IMAGE:$VERSION" -t "$IMAGE:${VERSION%.*}")
+          if [ "$LATEST" = "true" ]; then tags+=(-t "$IMAGE:latest"); fi
+          sources=()
+          for d in digests/*; do sources+=("$IMAGE@sha256:$(basename "$d")"); done
+          docker buildx imagetools create "${tags[@]}" "${sources[@]}"
+          docker buildx imagetools inspect "$IMAGE:$VERSION"
+          digest=$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{json .Manifest}}' | jq -r .digest)
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.tag.outputs.digest }}
+          push-to-registry: true
