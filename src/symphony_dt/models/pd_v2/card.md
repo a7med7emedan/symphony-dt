@@ -15,8 +15,8 @@ decision and is not a medical device.
 ## Structure in words
 
 Each participant has a latent severity in three domains: motor, cognitive and autonomic. Severity can only
-increase. Its speed depends on a participant-level rate, on demographic covariates, on optional pathway
-scores and on the current severity of the domains through a sparse coupling matrix. Random, positive
+increase. Its speed depends on a participant-level rate, on demographic covariates and on optional pathway
+scores. It also depends on the current severity of the domains, through a sparse coupling matrix. Random, positive
 multiplicative noise perturbs every step. Each score is a logistic function of its domain's severity,
 scaled to the instrument range, observed with Gaussian noise.
 
@@ -31,8 +31,8 @@ For participant i and step length h in years, with x = logit^-1(s):
     y_ik = L_k + (U_k - L_k) * logit^-1(a_k + b_k s_ik)       (UPDRS-III, SCOPA-AUT)
     y_ik = L_k + (U_k - L_k) * (1 - logit^-1(a_k + b_k s_ik)) (MoCA)
 
-The coupling matrix C has six free entries and three structural zeros (motor is driven only by itself;
-autonomic is driven by motor and itself). Time is in years. Each observed interval is split into equal
+The coupling matrix C has six free entries and three structural zeros. Motor is driven only by itself.
+Autonomic is driven by motor and itself. Time is in years. Each observed interval is split into equal
 sub-steps of at most 0.5 years, counted in integer days.
 
 ## Switches of the primary arm
@@ -63,8 +63,8 @@ The pre-declared sensitivity arm switches A01 on, with the centring constant (0.
 
 ## Inputs
 
-Per participant: visit times in whole days since baseline, the three scores where measured, LEDD per visit,
-centred age in decades, sex and a genotype-assay availability flag. Optional standardised pathway scores.
+Per participant: visit times in whole days since baseline, the three scores where measured and LEDD per visit.
+Also centred age in decades, sex and a genotype-assay availability flag. Optional standardised pathway scores.
 All centring and scaling constants must come from training participants only.
 
 ## Convergence gates
@@ -77,13 +77,13 @@ the best chain. See `symphony_dt.diagnostics`.
 
 - **UPDRS-III floor and heteroscedasticity.** Many motor scores sit at zero, which the truncated density gives
   no point mass. Noise also grows with severity, which the primary arm does not model.
-- **One link location for two cohorts.** The PD and prodromal cohorts share one link offset per endpoint, so the
-  model does not let the score-to-severity map differ by cohort.
+- **One link location for two cohorts.** The PD and prodromal cohorts share one link offset per endpoint. The
+  model therefore does not let the score-to-severity map differ by cohort.
 - **Process-noise prior conflict.** The half-normal prior on sigma_xi and the data pull in different directions,
   so its posterior is sensitive to the prior.
 - **Slow mixing of the motor link slope.** b for UPDRS-III mixes slowly and often sets the effective sample size.
-- **Multimodality.** Chains can be trapped in a mode of negligible posterior mass; the chain-exclusion rule exists
-  for this, and a fit with fewer than four retained chains is a failed fit.
+- **Multimodality.** Chains can be trapped in a mode of negligible posterior mass. The chain-exclusion rule exists
+  for this. A fit with fewer than four retained chains is a failed fit.
 - **Informative dropout** is not modelled.
 
 ## Data and governance

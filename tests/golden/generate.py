@@ -49,7 +49,11 @@ def load_study_modules(analysis: Path, root: Path) -> dict:
 
 def run(analysis: Path, record: Path, out: Path) -> dict:
     out.mkdir(parents=True, exist_ok=True)
+    import platform
+
     provenance = {
+        "platform": f"{platform.system()}-{platform.machine()}",
+        "numpy": np.__version__,
         "analysis_src": {f: sha(analysis / f) for f in ("stan_data.py", "simulate.py", "sbc.py")},
         "code_of_record": {f: sha(record / f) for f in ("score_fold.py", "pool_folds.py")},
     }

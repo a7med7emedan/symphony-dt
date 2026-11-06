@@ -19,5 +19,7 @@
     "sbc_functions.json": "b1e87210b4494b92b6ad71d352dc1349bab19e1d8456f83d96e27d39e7c2a144",
     "simulate_replicate.json": "e53312297e002f674dd731d176f4088fcc4d50d67316b8c020a2ff91c1da7c5e",
     "stan_data_build.json": "af221ea4860309150324c533685d87498fff699fcfb23598b019f759b8a483fd"
-  }
+  },
+  "numpy": "2.5.4",
+  "platform": "Darwin-arm64"
 }

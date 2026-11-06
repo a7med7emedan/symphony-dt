@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "symphony-dt: Bayesian digital twins of Parkinson's disease progression"
+abstract: >-
+  A toolkit for building, checking, calibrating, forecasting with and auditing Bayesian hierarchical
+  state-space digital twins on longitudinal clinical cohorts, with the frozen SYMPHONY v2 model of
+  Parkinson's disease progression.
+type: software
+authors:
+  - family-names: Hemedan
+    given-names: Ahmed
+version: 2.0.0
+date-released: 2026-11-06
+license: BSD-3-Clause
+repository-code: "https://github.com/a7med7emedan/symphony-dt"
+url: "https://a7med7emedan.github.io/symphony-dt/"
+keywords:
+  - bayesian
+  - digital-twin
+  - parkinsons-disease
+  - stan
+  - uncertainty-quantification
+  - clinical-prediction
+  - reproducibility

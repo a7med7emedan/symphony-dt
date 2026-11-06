@@ -35,7 +35,7 @@ Findings that shape later steps:
 
 Wrote `.dev/INVENTORY.md` and `.dev/DESIGN.md`.
 
-## Step 2. Data layer: IN PROGRESS
+## Steps 2 to 6. Data, model, fit, gates, forecast, evaluation, governance, CLI: DONE (2026-11-06)
 
 Written so far (2026-11-06, not yet committed): pyproject, constants, config, labels, errors, data
 (dataset, instruments, envelope, harmonise, stan_data, simulate), models (registry, pd_v2 with
@@ -45,3 +45,28 @@ Smoke test: simulate_cohort(40) -> build_stan_data reproduces the generating dat
 (obs_k, obs_node, K, h, y equal). forecast_gq.stan compiles with CmdStan 2.39.0.
 Remaining for Steps 2 to 6: io (readers, adapters, YAML mappings), calibration (SBC, PPC), plots,
 report, cli, about; then tests, golden fixtures, privacy gate.
+
+Commits on v2: 07302b8 (package), d47668e (tests and logo).
+Checks at d47668e: ruff PASS; mypy --strict PASS (41 files); fast suite 97 passed, 6 slow skipped;
+coverage 93% with fit.py excluded (Stan-only); privacy gate 0 findings; model-sha gate MATCH.
+Golden tests (exact equality against the code of record run on synthetic cases): stan_data.build,
+simulate_replicate (draw for draw, latents, flatten_theta, initial_values), sbc.retained_chains,
+chi_squared_uniformity, _thin, _rank, score_fold.py folds 1 to 3, pool_folds.py: 9 of 9 PASS.
+Code-of-record digests used: score_fold.py 946eb88b..., pool_folds.py ed133786...
+Decisions: thinned GQ input is run by calling the CmdStan binary directly (cmdstanpy rejects a pooled
+thin CSV); `about` module renamed `_about` so `symphony_dt.about()` stays a function.
+
+## Step 7. Docs, logo, tutorials: DONE (2026-11-06)
+Logo done: docs/assets/logo (tools/make_logo.py; needs DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib).
+Docs: mkdocs-material site, 40 pages incl. API reference, validation status (generated), model card
+(generated), four executed tutorials (no errors; stderr stripped by tools/clean_notebooks.py).
+mkdocs build --strict PASS. Prose check (no dashes, sentences under 25 words) 0 findings.
+Slow suite (--run-slow): 6 of 6 PASS in 4 min (fit, gates, resume, ArviZ, exact vs fast, CLI fit/gates/ppc).
+
+## Step 8. Quality gates and repository files: DONE locally (2026-11-06)
+ruff PASS, mypy --strict PASS, pytest 100 passed / 6 slow skipped, coverage 93%, privacy gate 0, model-sha MATCH.
+Workflows: ci.yml (gates, lint, test matrix ubuntu/macos x 3.11-3.13, docs, package), slow.yml, docs.yml,
+release.yml (TestPyPI for rc tags, PyPI for final, attestations, SBOM, GitHub release), codeql.yml,
+scorecard.yml, dependabot.yml. Golden tests: exact on the generating platform (Darwin-arm64), 1e-12 elsewhere.
+
+## Step 9. GitHub: NEXT

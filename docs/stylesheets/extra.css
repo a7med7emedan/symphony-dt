@@ -1,0 +1,4 @@
+:root { --md-primary-fg-color: #0072B2; --md-accent-fg-color: #E69F00; }
+.validation-VALIDATED { color: #009E73; font-weight: 600; }
+.validation-TESTED { color: #0072B2; font-weight: 600; }
+.validation-EXPERIMENTAL { color: #D55E00; font-weight: 600; }

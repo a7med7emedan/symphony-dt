@@ -86,7 +86,7 @@ ignore = ["N803", "N806", "N802", "RUF001", "RUF002", "RUF003", "PD011", "PD010"
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["N", "PD", "B018", "PT011", "PT018", "RUF059", "E501", "SIM117"]
 "tests/golden/stubs/**" = ["ALL"]
-"tools/make_logo.py" = ["E501"]
+"tools/**" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

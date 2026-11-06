@@ -24,3 +24,7 @@ src/symphony_dt/models/**/*.hpp
 runs/
 symphony_runs/
 .DS_Store
+
+# tutorial outputs
+docs/tutorials/tutorial_*/
+docs/coverage-badge.json

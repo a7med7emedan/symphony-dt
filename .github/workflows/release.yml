@@ -1,0 +1,94 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build, check and describe the distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Gates
+        run: |
+          python tools/privacy_gate.py
+          python tools/model_sha_gate.py
+      - name: Version matches the tag
+        run: |
+          version=$(python -c "import re;print(re.search(r'__version__ = \"(.+)\"', open('src/symphony_dt/_version.py').read()).group(1))")
+          tag="${GITHUB_REF_NAME#v}"
+          echo "package $version, tag $tag"
+          test "$version" = "$tag"
+      - run: pip install build twine cyclonedx-bom
+      - run: python -m build
+      - run: twine check --strict dist/*
+      - name: SBOM (CycloneDX)
+        run: |
+          python -m venv /tmp/sbom
+          /tmp/sbom/bin/pip install dist/*.whl
+          cyclonedx-py environment /tmp/sbom/bin/python --output-format JSON -o dist-sbom.cdx.json
+      - name: Smoke test the wheel
+        run: /tmp/sbom/bin/symphony-dt about
+      - uses: actions/upload-artifact@v4
+        with: {name: dist, path: dist/}
+      - uses: actions/upload-artifact@v4
+        with: {name: sbom, path: dist-sbom.cdx.json}
+
+  testpypi:
+    name: Publish to TestPyPI (release candidates)
+    if: contains(github.ref_name, 'rc')
+    needs: build
+    runs-on: ubuntu-latest
+    environment: {name: testpypi, url: "https://test.pypi.org/p/symphony-dt"}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: dist/}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          attestations: true
+
+  pypi:
+    name: Publish to PyPI (final releases)
+    if: ${{ !contains(github.ref_name, 'rc') }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment: {name: pypi, url: "https://pypi.org/p/symphony-dt"}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: dist/}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true
+
+  github-release:
+    name: GitHub release with SBOM and logo
+    if: ${{ !contains(github.ref_name, 'rc') }}
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {name: dist, path: dist/}
+      - uses: actions/download-artifact@v4
+        with: {name: sbom, path: sbom/}
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk '/^## \[/{n++} n==1' CHANGELOG.md > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/* sbom/dist-sbom.cdx.json \
+            docs/assets/logo/symphony-dt-1024.png docs/assets/logo/social-preview.png \
+            --title "symphony-dt $GITHUB_REF_NAME" --notes-file notes.md --verify-tag

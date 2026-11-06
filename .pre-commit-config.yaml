@@ -1,0 +1,38 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+        args: [--unsafe]
+      - id: end-of-file-fixer
+        exclude: '(\.stan|\.ipynb|tests/data/.*)$'
+      - id: trailing-whitespace
+        exclude: '(\.stan|\.ipynb|tests/data/.*)$'
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+  - repo: local
+    hooks:
+      - id: privacy-gate
+        name: privacy gate (no participant data, no identifiers)
+        entry: python tools/privacy_gate.py --staged
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: model-sha-gate
+        name: model-sha gate (pd_v2 is frozen)
+        entry: python tools/model_sha_gate.py
+        language: system
+        pass_filenames: false
+        files: '\.stan$'
+      - id: prose-check
+        name: prose check (no em or en dashes)
+        entry: python tools/prose_check.py
+        language: system
+        pass_filenames: false
+        always_run: true
