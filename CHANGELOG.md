@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
+## [Unreleased]
+
+### Changed
+- The brand returns to the SYMPHONY twin tulip: a red tulip, the symbol of Parkinson's disease, whose solid half is
+  the patient and whose dotted half is the digital twin. Refined mark, dark variant, app icon, wordmark, favicons,
+  social card and an ASCII tulip for `symphony-dt about`.
+- Two figures: the twin concept in Parkinson's disease, and the method overview updated for v2.
+
 ## [2.0.0] - 2026-11-06
 
 A complete rewrite. Version 1 is preserved on the `v1` branch and the `v1.0-preprint` tag.

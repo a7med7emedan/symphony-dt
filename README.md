@@ -1,11 +1,9 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/symphony-dt-dark.svg">
-    <img src="docs/assets/logo/symphony-dt-light.svg" alt="symphony-dt logo" width="180">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/symphony-dt-wordmark-dark.svg">
+    <img src="docs/assets/brand/symphony-dt-wordmark-light.svg" alt="symphony-dt" width="620">
   </picture>
 </p>
-
-<h1 align="center">symphony-dt</h1>
 
 <p align="center">Bayesian hierarchical state-space digital twins for longitudinal clinical cohorts.</p>
 
@@ -23,6 +21,11 @@ cohorts. It ships **pd_v2**, the frozen model of the SYMPHONY v2 study of Parkin
 follows MDS-UPDRS Part III, MoCA and SCOPA-AUT over time, in Stan, driven from Python with cmdstanpy.
 
 **Developed by Ahmed Hemedan.** Validation manuscript in preparation.
+
+<p align="center"><img src="docs/assets/figures/twin-concept.svg" alt="The digital twin of Parkinson's disease: from irregular clinic visits to a calibrated forecast that must pass fixed gates" width="100%"></p>
+
+The logo is a red tulip, the symbol of Parkinson's disease. Its solid half is the patient. Its dotted half is the
+digital twin, drawn as posterior samples.
 
 ## Install
 
@@ -47,6 +50,10 @@ print("\n".join(result.gates().summary_lines()))           # the study's converg
 forecast = forecast_exact(result, split, total_keep=400)
 print(forecast.interval(0.95).head())
 ```
+
+## How it works
+
+<p align="center"><img src="docs/assets/figures/method-overview.svg" alt="symphony-dt method overview: data, model, inference, gates, evaluation and governance" width="100%"></p>
 
 ## What it does
 

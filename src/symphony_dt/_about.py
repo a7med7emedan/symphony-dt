@@ -12,13 +12,20 @@ __all__ = ["ASCII_LOGO", "CITATION", "DOCS_URL", "about"]
 
 DOCS_URL = "https://a7med7emedan.github.io/symphony-dt/"
 
-#: The mark: three staff lines that turn into a forecast trajectory inside an uncertainty band.
+#: The SYMPHONY tulip: the solid half is the patient, the dotted half is the digital twin.
 ASCII_LOGO = r"""
-                                          .:::
-   -----------.                      .:::::/
-   ------------(o)---------.__..--''::::::
-   -----------'                 '::::::::
-                                   '':::
+            /\    /\    /\
+           /##\  /#|:\  /::\
+          |####\/##|::\/::::|
+          |########|::::::::|
+           \#######|:::::::/
+            '.#####|:::::.'
+              '-.##|::.-'
+         .--.      |      .:.
+        (####'-.   |   .-'::)
+         '--.__'-. | .-'__:'
+                '-.|.-'
+                   |
           s y m p h o n y - d t
 """
 

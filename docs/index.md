@@ -1,12 +1,17 @@
 # symphony-dt
 
-![symphony-dt](assets/logo/symphony-dt-light.svg){ width="160" }
+![symphony-dt](assets/brand/symphony-dt-wordmark-light.svg){ width="560" }
 
 **symphony-dt** builds, checks, calibrates, forecasts with and audits Bayesian digital twins of longitudinal
 clinical cohorts. It ships **pd_v2**, the frozen model of the SYMPHONY v2 study of Parkinson's disease progression.
 pd_v2 tracks three scores over time: MDS-UPDRS Part III, MoCA and SCOPA-AUT.
 
 Developed by Ahmed Hemedan.
+
+![The digital twin of Parkinson's disease](assets/figures/twin-concept.svg)
+
+The logo is a red tulip, the symbol of Parkinson's disease. Its solid half is the patient. Its dotted half is the
+digital twin, drawn as posterior samples.
 
 !!! note "Validation manuscript in preparation"
     The study's results on the Parkinson's Progression Markers Initiative (PPMI) will appear in the validation

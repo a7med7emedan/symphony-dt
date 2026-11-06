@@ -9,8 +9,8 @@ copyright: Copyright 2026 Ahmed Hemedan. BSD-3-Clause.
 
 theme:
   name: material
-  logo: assets/logo/symphony-dt-dark.svg
-  favicon: assets/logo/favicon-32.png
+  logo: assets/brand/symphony-dt-mark-dark.svg
+  favicon: assets/brand/favicon-32.png
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default

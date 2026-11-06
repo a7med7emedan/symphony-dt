@@ -1,5 +1,7 @@
 # The state-space model
 
+![symphony-dt method overview](../assets/figures/method-overview.svg)
+
 ## In plain words
 
 Each person has a hidden disease severity in three domains: motor, cognitive and autonomic. Severity never goes
