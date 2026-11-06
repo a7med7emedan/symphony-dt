@@ -76,3 +76,12 @@ Repo description, topics (7), homepage set; Pages enabled with build_type workfl
 environments testpypi and pypi created. Social preview image needs the web UI (human step).
 Local wheel built, twine check PASS, clean-venv install ran about + quickstart (fit, gates, GQ, score).
 
+
+CI round 1 (597263c): gates, lint, docs, package PASS; Ubuntu tests FAILED 2 golden tests (EM fit agrees
+to about 1e-9 across platforms; one comparison had missed the tolerant helper). Fixed in af0f0d4 (exact on
+the generating platform, 1e-6 relative elsewhere). Pushed; CI round 2 running.
+
+NEXT (resume here): when PR #2 CI is green, merge it (merge commit, no force). Then on main: tag v2.0.0rc1,
+push the tag; release.yml publishes to TestPyPI (environment testpypi). Install from TestPyPI in a clean venv,
+run quickstart and `symphony-dt about`. Then tag v2.0.0 for PyPI and the GitHub release. If trusted
+publishing is not configured, the publish job fails: leave the tag unpublished and report the settings.
