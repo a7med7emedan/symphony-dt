@@ -1,0 +1,9 @@
+{
+  "title": "symphony-dt: Bayesian digital twins of Parkinson's disease progression",
+  "description": "A toolkit for building, checking, calibrating, forecasting with and auditing Bayesian hierarchical state-space digital twins on longitudinal clinical cohorts, with the frozen SYMPHONY v2 model of Parkinson's disease progression.",
+  "upload_type": "software",
+  "creators": [{"name": "Hemedan, Ahmed"}],
+  "license": "BSD-3-Clause",
+  "keywords": ["bayesian", "digital-twin", "parkinsons-disease", "stan", "uncertainty-quantification", "clinical-prediction", "reproducibility"],
+  "access_right": "open"
+}

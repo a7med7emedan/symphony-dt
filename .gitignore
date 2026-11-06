@@ -1,33 +1,30 @@
-# Python build artifacts
+# environments and caches
+.venv/
+.cmdstan/
 __pycache__/
 *.py[cod]
-*.so
-*.egg-info/
-dist/
-build/
-.eggs/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-
-# Virtual environments
-.venv/
-venv/
-ENV/
-
-# OS / editor
-.DS_Store
-.vscode/
-.idea/
-
-# Runtime outputs
-outputs/
-
-# Local data and generated results: never commit PPMI-derived files
-data/
-symphony-quickstart/
-*.csv
-!tests/**/*.csv
+.hypothesis/
 .coverage
-.env
 coverage.xml
+htmlcov/
+dist/
+build/
+site/
+*.egg-info/
+# Stan build products
+src/symphony_dt/models/**/model
+src/symphony_dt/models/**/forecast_gq
+src/symphony_dt/models/**/conditional
+src/symphony_dt/models/**/*.hpp
+*.o
+# run outputs
+runs/
+symphony_runs/
+.DS_Store
+
+# tutorial outputs
+docs/tutorials/tutorial_*/
+docs/coverage-badge.json

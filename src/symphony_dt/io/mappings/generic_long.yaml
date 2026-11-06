@@ -1,0 +1,17 @@
+# A generic long table for any cohort, for example a national cohort: one row per participant,
+# visit and endpoint. Participants come from a second table. Copy and edit the column names.
+name: generic_long
+description: Long observations table plus a participants table.
+participants:
+  table: participants
+  id: subject
+  cohort: {column: group, values: {PD: PD, PROD: Prodromal}}
+  age: age_at_baseline
+  sex: sex_code
+observations:
+  - table: scores
+    id: subject
+    time: {column: months_since_baseline, unit: months}
+    endpoint_column: instrument
+    endpoint_values: {UPDRS3: updrs3, MOCA: moca, SCOPAAUT: scopa_aut}
+    value: score

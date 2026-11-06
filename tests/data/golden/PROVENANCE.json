@@ -1,0 +1,25 @@
+{
+  "analysis_src": {
+    "sbc.py": "f05d98b05c8bfdaa5b33ba872156ec19169fbc6eb0dfe834b02b46045b6c0b0f",
+    "simulate.py": "602b54871f5576bb85efe4fce5cf440174c640672ea71dcb4f074fc2d6e73d6e",
+    "stan_data.py": "065819419fe5aed922103ca84972858c57d217846b913bc8a1118c8a7cd6acc7"
+  },
+  "code_of_record": {
+    "pool_folds.py": "ed1337860e438404356de9685eaaa09533ed0000e51e9d71a0ca777b1790d152",
+    "score_fold.py": "946eb88b04728d76571a8050e8b22b2f6f6a40b16ac8e94b8f330760365c9f85"
+  },
+  "fixtures": {
+    "fold1_scores.json": "f5371f87f2a9df090055bc9b0ee7781f667ebafd7f582113b0b0a902c016a36d",
+    "fold1_target_scores.csv": "60ddf7144bb8949cd841e5a146b36f7767a22b3e723f981d7818171816e28d0b",
+    "fold2_scores.json": "0f55b4ff4799e8073932d07a3bcdbbedec9796c8eeab5ecde921d323bd53f43c",
+    "fold2_target_scores.csv": "ee6701963c3ba492c69cde63d25447712833e6cbd45e882ca35dd420205ceb5b",
+    "fold3_scores.json": "cfde05fee63d5c46e2c77e8c6606062fe313498e66a4460aa6be153148bd4cdf",
+    "fold3_target_scores.csv": "f3ade96d3ab63a16b02c03f2e715cad0dcba32ac7469023efd253531c59d19ad",
+    "pooled_scores.json": "7124878705b54f07ea606b879a23bc277ca911a352a1cafb698416c625ec6426",
+    "sbc_functions.json": "b1e87210b4494b92b6ad71d352dc1349bab19e1d8456f83d96e27d39e7c2a144",
+    "simulate_replicate.json": "e53312297e002f674dd731d176f4088fcc4d50d67316b8c020a2ff91c1da7c5e",
+    "stan_data_build.json": "af221ea4860309150324c533685d87498fff699fcfb23598b019f759b8a483fd"
+  },
+  "numpy": "2.5.4",
+  "platform": "Darwin-arm64"
+}

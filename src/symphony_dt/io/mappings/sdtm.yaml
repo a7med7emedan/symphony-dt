@@ -1,0 +1,18 @@
+# CDISC SDTM QS and DM domains. QSTESTCD values below are EXAMPLES; replace them with your study's
+# controlled terminology. Time is the study day QSDY; day 1 becomes day 0 of the twin.
+name: sdtm
+description: CDISC SDTM QS (questionnaires) and DM (demographics) domains.
+participants:
+  table: dm
+  id: USUBJID
+  cohort: {column: ARMCD}
+  age: AGE
+  sex: SEX
+  sex_values: {F: 0, M: 1}
+observations:
+  - table: qs
+    id: USUBJID
+    time: {column: QSDY, unit: days}
+    endpoint_column: QSTESTCD
+    endpoint_values: {UPD3TOT: updrs3, MOCATOT: moca, SCAUTOT: scopa_aut}
+    value: QSSTRESN

@@ -1,0 +1,33 @@
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Runtime outputs
+outputs/
+
+# Local data and generated results: never commit PPMI-derived files
+data/
+symphony-quickstart/
+*.csv
+!tests/**/*.csv
+.coverage
+.env
+coverage.xml

@@ -1,35 +1,24 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "symphony-dt: SYMPHONY clinic-updated digital twin for Parkinson's disease"
+title: "symphony-dt: Bayesian digital twins of Parkinson's disease progression"
+abstract: >-
+  A toolkit for building, checking, calibrating, forecasting with and auditing Bayesian hierarchical
+  state-space digital twins on longitudinal clinical cohorts, with the frozen SYMPHONY v2 model of
+  Parkinson's disease progression.
 type: software
 authors:
   - family-names: Hemedan
     given-names: Ahmed
-version: 0.2.0
-license: Apache-2.0
+version: 2.0.0
+date-released: 2026-11-06
+license: BSD-3-Clause
 repository-code: "https://github.com/a7med7emedan/symphony-dt"
-abstract: >-
-  symphony-dt is a reproducible Python package for a clinic-updated Bayesian
-  digital twin of Parkinson's disease. Three latent domain states (motor,
-  cognitive, autonomic) evolve under monotone stochastic dynamics with a sparse
-  cross-domain coupling and a hierarchical per-patient progression drive. A
-  bounded, truncated Gaussian observation model links them to MDS-UPDRS Part III,
-  MoCA and SCOPA-AUT. A global posterior is fitted by NUTS, conditioned per
-  patient, and propagated into multi-horizon forecasts and clinical event risk
-  curves behind confidence gating rules.
+url: "https://a7med7emedan.github.io/symphony-dt/"
 keywords:
-  - digital twin
-  - Parkinson's disease
-  - Bayesian inference
-  - hierarchical model
-  - state space model
-  - stochastic dynamics
-  - NUTS
-  - NumPyro
-  - JAX
-  - posterior predictive
-  - uncertainty quantification
-  - calibration
-  - clinical forecasting
-  - PPMI
+  - bayesian
+  - digital-twin
+  - parkinsons-disease
+  - stan
+  - uncertainty-quantification
+  - clinical-prediction
   - reproducibility

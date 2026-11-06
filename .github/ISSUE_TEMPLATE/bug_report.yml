@@ -1,62 +1,24 @@
 name: Bug report
-description: Something in symphony-dt does not work as documented.
+description: Something does not work as documented.
 labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: |
-        Thanks for the report. Please use synthetic data (`symphony-dt synth`) to reproduce.
-        Do not paste, attach or describe PPMI or any other participant-level data here.
+      value: "Never paste participant data, identifiers or restricted results. Reproduce with simulate_cohort."
   - type: textarea
-    id: what-happened
-    attributes:
-      label: What happened
-      description: What you ran, what you expected, and what you saw instead.
-    validations:
-      required: true
+    id: what
+    attributes: {label: What happened, description: "Include the command or code and the full error."}
+    validations: {required: true}
   - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce
-      description: The smallest set of commands that shows the problem, ideally starting from `symphony-dt quickstart` or `symphony-dt synth`.
-      render: shell
-    validations:
-      required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Error output
-      description: The full traceback or log, with any local paths or identifiers removed.
-      render: text
+    id: expected
+    attributes: {label: What you expected}
   - type: input
     id: version
-    attributes:
-      label: symphony-dt version
-      placeholder: "0.2.0 (from `pip show symphony-dt`)"
-    validations:
-      required: true
-  - type: dropdown
-    id: install
-    attributes:
-      label: How is it installed
-      options:
-        - pip, core only
-        - pip, with [inference]
-        - Docker image
-        - Editable install from a clone
-    validations:
-      required: true
-  - type: input
-    id: environment
-    attributes:
-      label: Python version and operating system
-      placeholder: "Python 3.12, Ubuntu 24.04"
-    validations:
-      required: true
+    attributes: {label: "Output of `symphony-dt about` and `symphony-dt check`"}
   - type: checkboxes
-    id: data
+    id: privacy
     attributes:
-      label: Data
+      label: Privacy
       options:
-        - label: This report contains no participant-level data.
+        - label: This report contains no participant data, identifiers or restricted results.
           required: true

@@ -1,0 +1,29 @@
+# Install once with `pre-commit install`; run on everything with `pre-commit run --all-files`.
+# Ruff runs lint only, matching `ruff check .` in CI.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.1
+    hooks:
+      - id: ruff
+        name: ruff check
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: end-of-file-fixer
+        exclude: ^LICENSE$
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=500]
+
+  - repo: local
+    hooks:
+      - id: no-data-files
+        name: refuse data files outside tests/
+        description: PPMI-derived or other data tables must never be committed.
+        entry: "Data files (*.csv, *.parquet) may only live under tests/. Remove them from the commit:"
+        language: fail
+        files: '\.(csv|parquet)$'
+        exclude: '^tests/'

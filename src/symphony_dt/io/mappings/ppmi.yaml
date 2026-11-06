@@ -1,0 +1,26 @@
+# PPMI study-data download, supplied by the user under the PPMI data use agreement.
+# File and column names follow the PPMI curated exports at the time of writing; check them against
+# your download. Nothing here is PPMI data.
+#
+# Two columns are not in the raw exports and must be prepared by the user:
+#   AGE_AT_BL   age at the baseline visit, added to Participant_Status.csv (for example from Age_at_visit)
+#   SCAU_TOTAL  the SCOPA-AUT total on the 0 to 69 scale, added to SCOPA-AUT.csv. No proration ships.
+# LEDD is optional: add a visits entry pointing at your own LEDD table (PATNO, INFODT, LEDD).
+name: ppmi
+description: PPMI curated study-data export layout (bring your own download).
+files:
+  status: Participant_Status.csv
+  demographics: Demographics.csv
+  updrs3: MDS-UPDRS_Part_III.csv
+  moca: Montreal_Cognitive_Assessment__MoCA_.csv
+  scopa: SCOPA-AUT.csv
+participants:
+  table: participants
+  id: PATNO
+  cohort: {column: COHORT, values: {"1": PD, "4": Prodromal, "2": Healthy Control, "3": SWEDD}}
+  age: AGE_AT_BL
+  sex: SEX
+observations:
+  - {table: updrs3, id: PATNO, time: {column: INFODT, kind: date, date_format: "%m/%Y"}, endpoint: updrs3, value: NP3TOT}
+  - {table: moca, id: PATNO, time: {column: INFODT, kind: date, date_format: "%m/%Y"}, endpoint: moca, value: MCATOT}
+  - {table: scopa, id: PATNO, time: {column: INFODT, kind: date, date_format: "%m/%Y"}, endpoint: scopa_aut, value: SCAU_TOTAL}

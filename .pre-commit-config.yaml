@@ -1,29 +1,38 @@
-# Install once with `pre-commit install`; run on everything with `pre-commit run --all-files`.
-# Ruff runs lint only, matching `ruff check .` in CI.
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.1
+    rev: v0.6.9
     hooks:
       - id: ruff
-        name: ruff check
-
+        args: [--fix]
+      - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: v4.6.0
     hooks:
-      - id: end-of-file-fixer
-        exclude: ^LICENSE$
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
       - id: check-yaml
+        args: [--unsafe]
+      - id: end-of-file-fixer
+        exclude: '(\.stan|\.ipynb|tests/data/.*)$'
+      - id: trailing-whitespace
+        exclude: '(\.stan|\.ipynb|tests/data/.*)$'
       - id: check-added-large-files
-        args: [--maxkb=500]
-
+        args: [--maxkb=1000]
   - repo: local
     hooks:
-      - id: no-data-files
-        name: refuse data files outside tests/
-        description: PPMI-derived or other data tables must never be committed.
-        entry: "Data files (*.csv, *.parquet) may only live under tests/. Remove them from the commit:"
-        language: fail
-        files: '\.(csv|parquet)$'
-        exclude: '^tests/'
+      - id: privacy-gate
+        name: privacy gate (no participant data, no identifiers)
+        entry: python tools/privacy_gate.py --staged
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: model-sha-gate
+        name: model-sha gate (pd_v2 is frozen)
+        entry: python tools/model_sha_gate.py
+        language: system
+        pass_filenames: false
+        files: '\.stan$'
+      - id: prose-check
+        name: prose check (no em or en dashes)
+        entry: python tools/prose_check.py
+        language: system
+        pass_filenames: false
+        always_run: true

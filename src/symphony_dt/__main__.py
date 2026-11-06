@@ -1,4 +1,5 @@
-from .cli import app
+"""Run the CLI with python -m symphony_dt."""
 
-if __name__ == '__main__':
-    app()
+from symphony_dt.cli import main
+
+main()
