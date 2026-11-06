@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/symphony-dt-wordmark-dark.svg">
-    <img src="docs/assets/brand/symphony-dt-wordmark-light.svg" alt="symphony-dt" width="620">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/a7med7emedan/symphony-dt/v2.0.1/docs/assets/brand/symphony-dt-wordmark-dark.png">
+    <img src="https://raw.githubusercontent.com/a7med7emedan/symphony-dt/v2.0.1/docs/assets/brand/symphony-dt-wordmark-light.png" alt="symphony-dt" width="620">
   </picture>
 </p>
 
@@ -13,7 +13,7 @@
   <a href="https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://a7med7emedan.github.io/symphony-dt/"><img src="https://img.shields.io/endpoint?url=https://a7med7emedan.github.io/symphony-dt/coverage-badge.json" alt="Coverage"></a>
   <a href="https://a7med7emedan.github.io/symphony-dt/"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-BSD--3--Clause-blue.svg" alt="Licence"></a>
+  <a href="https://github.com/a7med7emedan/symphony-dt/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-BSD--3--Clause-blue.svg" alt="Licence"></a>
 </p>
 
 symphony-dt builds, checks, calibrates, forecasts with and audits Bayesian digital twins of longitudinal clinical
@@ -22,7 +22,7 @@ follows MDS-UPDRS Part III, MoCA and SCOPA-AUT over time, in Stan, driven from P
 
 **Developed by Ahmed Hemedan.** Validation manuscript in preparation.
 
-<p align="center"><img src="docs/assets/figures/twin-concept.svg" alt="The digital twin of Parkinson's disease: from irregular clinic visits to a calibrated forecast that must pass fixed gates" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/a7med7emedan/symphony-dt/v2.0.1/docs/assets/figures/twin-concept.png" alt="The digital twin of Parkinson's disease: from irregular clinic visits to a calibrated forecast that must pass fixed gates" width="100%"></p>
 
 The logo is a red tulip, the symbol of Parkinson's disease. Its solid half is the patient. Its dotted half is the
 digital twin, drawn as posterior samples.
@@ -53,7 +53,7 @@ print(forecast.interval(0.95).head())
 
 ## How it works
 
-<p align="center"><img src="docs/assets/figures/method-overview.svg" alt="symphony-dt method overview: data, model, inference, gates, evaluation and governance" width="100%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/a7med7emedan/symphony-dt/v2.0.1/docs/assets/figures/method-overview.png" alt="symphony-dt method overview: data, model, inference, gates, evaluation and governance" width="100%"></p>
 
 ## What it does
 
@@ -75,14 +75,14 @@ Every public function carries a validation label: VALIDATED, TESTED or EXPERIMEN
 > package's own simulator. A privacy gate runs before every commit and in CI. The model was developed on PPMI data
 > under the PPMI data use agreement; obtain PPMI data yourself from PPMI. No PPMI-derived result appears here until
 > the validation manuscript is published. The twin's forecasts are associational: no causal, treatment or
-> deployment claim is made. See [GOVERNANCE.md](GOVERNANCE.md).
+> deployment claim is made. See [GOVERNANCE.md](https://github.com/a7med7emedan/symphony-dt/blob/main/GOVERNANCE.md).
 
 ## Citation
 
 > Hemedan A. symphony-dt: Bayesian digital twins of Parkinson's disease progression, version 2.0.0.
 > https://github.com/a7med7emedan/symphony-dt
 
-See [CITATION.cff](CITATION.cff).
+See [CITATION.cff](https://github.com/a7med7emedan/symphony-dt/blob/main/CITATION.cff).
 
 ## Licence
 

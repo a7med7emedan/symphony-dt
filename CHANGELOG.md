@@ -2,7 +2,7 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
-## [Unreleased]
+## [2.0.1] - 2026-11-06
 
 ### Changed
 - The brand returns to the SYMPHONY twin tulip: a red tulip, the symbol of Parkinson's disease, whose solid half is
