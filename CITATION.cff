@@ -9,7 +9,7 @@ type: software
 authors:
   - family-names: Hemedan
     given-names: Ahmed
-version: 2.0.0
+version: 2.0.1
 date-released: 2026-11-06
 license: BSD-3-Clause
 repository-code: "https://github.com/a7med7emedan/symphony-dt"

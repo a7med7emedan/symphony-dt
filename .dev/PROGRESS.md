@@ -91,3 +91,15 @@ apart; values move in the 6th digit) and ArviZ 0.x test path on Python 3.11. Fix
 relative, 1% iteration window off-platform; exact on the generating platform). Verified locally on
 Python 3.11 + ArviZ 0.23: 100 passed. 950dfca sets version 2.0.0rc1 (release.yml requires tag = version).
 Final release needs a small PR bumping to 2.0.0 before tagging v2.0.0.
+
+## Steps 9 and 10. DONE (2026-11-06)
+PR #2 merged by Ahmed (beb182d). v2.0.0rc1 tag -> TestPyPI with attestations; installed from TestPyPI, about +
+quickstart PASS. Rule from Ahmed: all PRs, merges and releases under his account, no bots. Dependabot PRs #3 to #7
+closed with branches removed, 24 bot-triggered workflow runs deleted, dependabot.yml and the bot GitHub-release job
+removed (PR #8, merged by Ahmed, 66db8cc, version 2.0.0). v2.0.0 tag -> PyPI with attestations; GitHub release
+created by Ahmed with wheel, sdist and SBOM; digests equal PyPI's. pip install symphony-dt PASS in a clean venv.
+Docs live at https://a7med7emedan.github.io/symphony-dt/ (coverage badge 93%).
+Brand: Ahmed asked to restore the v1 twin tulip and the method figure. tools/make_brand.py and make_figures.py;
+PR #9 (brand branch) open, version 2.0.1.dev0 on main after merge.
+Human steps: upload docs/assets/brand/social-preview.png in repo settings; Zenodo integration for a DOI.
+2.0.1 requested by Ahmed: release the tulip brand and figures so PyPI and `symphony-dt about` show them.
