@@ -6,7 +6,7 @@ Every public function and class carries one of three labels.
 - **TESTED**: correct on synthetic data and unit tests, not validated on a clinical cohort.
 - **EXPERIMENTAL**: works and is tested, but its design is not settled.
 
-Counts: 43 VALIDATED, 157 TESTED, 14 EXPERIMENTAL.
+Counts: 43 VALIDATED, 158 TESTED, 14 EXPERIMENTAL.
 
 | object | label |
 |---|---|
@@ -84,6 +84,7 @@ Counts: 43 VALIDATED, 157 TESTED, 14 EXPERIMENTAL.
 | `diagnostics.assess` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `diagnostics.assess_tables` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `diagnostics.chain_csvs_in_order` | <span class="validation-VALIDATED">VALIDATED</span> |
+| `diagnostics.chain_id` | <span class="validation-TESTED">TESTED</span> |
 | `diagnostics.e_bfmi` | <span class="validation-TESTED">TESTED</span> |
 | `diagnostics.is_global` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `diagnostics.read_sampler_columns` | <span class="validation-TESTED">TESTED</span> |

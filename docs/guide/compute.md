@@ -19,15 +19,15 @@ chain has finished. Chains never overwrite one another.
 for every release, for `linux/amd64` and `linux/arm64`, with a signed build provenance:
 
 ```bash
-docker pull ghcr.io/a7med7emedan/symphony-dt:2.1.0
-docker run --rm -v "$PWD":/work ghcr.io/a7med7emedan/symphony-dt:2.1.0 simulate --n 60 --out cohort
-docker run --rm -v "$PWD":/work ghcr.io/a7med7emedan/symphony-dt:2.1.0 fit cohort/stan_data.json --out fit
-apptainer pull symphony-dt.sif docker://ghcr.io/a7med7emedan/symphony-dt:2.1.0
-gh attestation verify oci://ghcr.io/a7med7emedan/symphony-dt:2.1.0 --owner a7med7emedan
+docker pull ghcr.io/a7med7emedan/symphony-dt:2.1.1
+docker run --rm -v "$PWD":/work ghcr.io/a7med7emedan/symphony-dt:2.1.1 simulate --n 60 --out cohort
+docker run --rm -v "$PWD":/work ghcr.io/a7med7emedan/symphony-dt:2.1.1 fit cohort/stan_data.json --out fit
+apptainer pull symphony-dt.sif docker://ghcr.io/a7med7emedan/symphony-dt:2.1.1
+gh attestation verify oci://ghcr.io/a7med7emedan/symphony-dt:2.1.1 --owner a7med7emedan
 ```
 
 The image runs as an unprivileged user. On Linux, add `--user "$(id -u):$(id -g)"` so that output files belong to
-you. The tags are the version (`2.1.0`), the minor series (`2.1`) and `latest`.
+you. The tags are the version (`2.1.1`), the minor series (`2.1`) and `latest`.
 
 **The twin service** reads commands such as `{"op": "observe", "visit": {...}}`, `{"op": "forecast",
 "horizons": [1, 2]}` and `{"op": "next_visit"}`. It answers each with one JSON line and saves the twin after every
