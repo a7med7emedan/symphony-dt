@@ -8,8 +8,8 @@
 <p align="center">Bayesian hierarchical state-space digital twins for longitudinal clinical cohorts.</p>
 
 <p align="center">
-  <a href="https://pypi.org/project/symphony-dt/"><img src="https://img.shields.io/pypi/v/symphony-dt.svg" alt="PyPI"></a>
-  <a href="https://pypi.org/project/symphony-dt/"><img src="https://img.shields.io/pypi/pyversions/symphony-dt.svg" alt="Python versions"></a>
+  <a href="https://pypi.org/project/symphony-dt/"><img src="https://img.shields.io/pypi/v/symphony-dt.svg?cacheSeconds=3600" alt="PyPI"></a>
+  <a href="https://pypi.org/project/symphony-dt/"><img src="https://img.shields.io/pypi/pyversions/symphony-dt.svg?cacheSeconds=3600" alt="Python versions"></a>
   <a href="https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://a7med7emedan.github.io/symphony-dt/"><img src="https://img.shields.io/endpoint?url=https://a7med7emedan.github.io/symphony-dt/coverage-badge.json" alt="Coverage"></a>
   <a href="https://a7med7emedan.github.io/symphony-dt/"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
