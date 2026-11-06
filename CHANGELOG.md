@@ -2,6 +2,13 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
+## [Unreleased]
+
+### Added
+- A container image for every release at `ghcr.io/a7med7emedan/symphony-dt`, for `linux/amd64` and `linux/arm64`.
+  It holds the wheel published on PyPI, CmdStan 2.39.0 and a compiled pd_v2, runs as an unprivileged user and
+  carries a signed build provenance. The first image is 2.1.0.
+
 ## [2.1.0] - 2026-11-06
 
 ### Added
