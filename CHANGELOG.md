@@ -2,7 +2,7 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
-## [Unreleased] (2.1.0)
+## [2.1.0] - 2026-11-06
 
 ### Added
 - A study file and one command: `symphony-dt init` and `symphony-dt run study.yaml`, with ten resumable stages,
