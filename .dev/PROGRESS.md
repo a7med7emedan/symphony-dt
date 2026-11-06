@@ -85,3 +85,9 @@ NEXT (resume here): when PR #2 CI is green, merge it (merge commit, no force). T
 push the tag; release.yml publishes to TestPyPI (environment testpypi). Install from TestPyPI in a clean venv,
 run quickstart and `symphony-dt about`. Then tag v2.0.0 for PyPI and the GitHub release. If trusted
 publishing is not configured, the publish job fails: leave the tag unpublished and report the settings.
+
+CI round 2 (af0f0d4): golden LMM comparisons still failed across platforms (EM stops a few iterations
+apart; values move in the 6th digit) and ArviZ 0.x test path on Python 3.11. Fixed in 44adc23 (1e-4
+relative, 1% iteration window off-platform; exact on the generating platform). Verified locally on
+Python 3.11 + ArviZ 0.23: 100 passed. 950dfca sets version 2.0.0rc1 (release.yml requires tag = version).
+Final release needs a small PR bumping to 2.0.0 before tagging v2.0.0.
