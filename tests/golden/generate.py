@@ -63,15 +63,27 @@ def run(analysis: Path, record: Path, out: Path) -> dict:
         (out / "stan_data_build.json").write_text(json.dumps(stan, sort_keys=True) + "\n")
 
         patterns, theta, seed, n = cases.simulate_case()
-        study_patterns = [{"dt_days": p["dt_days"], "dt_years": p["dt_years"], "observed": p["observed"]}
-                          for p in patterns]
+        study_patterns = [
+            {"dt_days": p["dt_days"], "dt_years": p["dt_years"], "observed": p["observed"]} for p in patterns
+        ]
         latents: dict = {}
         sim = mods["simulate"].simulate_replicate(
-            study_patterns, n, theta, np.random.default_rng(seed), censored=(0, 1, 0),
-            state_dependent_sigma=1, ledd_in_mu_U=1, sigma_xbar=(0.53, 0.54, 0.55), latents=latents)
-        payload = {"data": sim, "latents": {k: np.asarray(v).tolist() for k, v in latents.items()},
-                   "flat_theta": mods["simulate"].flatten_theta(theta),
-                   "inits": mods["simulate"].initial_values(theta, np.random.default_rng(7), n=3, n_steps=4)}
+            study_patterns,
+            n,
+            theta,
+            np.random.default_rng(seed),
+            censored=(0, 1, 0),
+            state_dependent_sigma=1,
+            ledd_in_mu_U=1,
+            sigma_xbar=(0.53, 0.54, 0.55),
+            latents=latents,
+        )
+        payload = {
+            "data": sim,
+            "latents": {k: np.asarray(v).tolist() for k, v in latents.items()},
+            "flat_theta": mods["simulate"].flatten_theta(theta),
+            "inits": mods["simulate"].initial_values(theta, np.random.default_rng(7), n=3, n_steps=4),
+        }
         (out / "simulate_replicate.json").write_text(json.dumps(payload, sort_keys=True) + "\n")
 
         sbc = mods["sbc"]
@@ -92,17 +104,40 @@ def run(analysis: Path, record: Path, out: Path) -> dict:
         for fold in (1, 2, 3):
             sp, tests, age, gq = cases.fold_case(fold)
             fold_root = cases.write_fold_dir(root / f"fold_{fold:02d}_ho", sp, tests, age, gq)
-            subprocess.run([sys.executable, str(record / "score_fold.py"), "--fold", str(fold), "--test",
-                            str(fold_root)], check=True, capture_output=True, text=True)
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(record / "score_fold.py"),
+                    "--fold",
+                    str(fold),
+                    "--test",
+                    str(fold_root),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
             (out / f"fold{fold}_scores.json").write_bytes((fold_root / "score" / "scores.json").read_bytes())
             ts = (fold_root / "score" / "target_scores.csv").read_text()
-            (fold_root / "fit_record_cv.json").write_text(json.dumps(
-                {"converged": True, "max_rhat": 1.004, "min_ess_bulk": 512.0}))
+            (fold_root / "fit_record_cv.json").write_text(
+                json.dumps({"converged": True, "max_rhat": 1.004, "min_ess_bulk": 512.0})
+            )
             (out / f"fold{fold}_target_scores.csv").write_text(ts)
             roots.append(fold_root)
         pooled_dir = root / "pooled"
-        subprocess.run([sys.executable, str(record / "pool_folds.py"), "--roots", *map(str, roots),
-                        "--out", str(pooled_dir)], check=True, capture_output=True, text=True)
+        subprocess.run(
+            [
+                sys.executable,
+                str(record / "pool_folds.py"),
+                "--roots",
+                *map(str, roots),
+                "--out",
+                str(pooled_dir),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
         (out / "pooled_scores.json").write_bytes((pooled_dir / "pooled_scores.json").read_bytes())
 
     provenance["fixtures"] = {p.name: sha(p) for p in sorted(out.iterdir()) if p.name != "PROVENANCE.json"}

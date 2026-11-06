@@ -14,11 +14,12 @@ DOCS_URL = "https://a7med7emedan.github.io/symphony-dt/"
 
 #: The mark: three staff lines that turn into a forecast trajectory inside an uncertainty band.
 ASCII_LOGO = r"""
-  ────────────────────╮            . · ' ' ·
-  ────────────────────┼──────── · '  ___..··'
-  ────────────────────╯   . ·' __..-'' . · '
-                      · '_..-''  . · '
-       s y m p h o n y - d t
+                                          .:::
+   -----------.                      .:::::/
+   ------------(o)---------.__..--''::::::
+   -----------'                 '::::::::
+                                   '':::
+          s y m p h o n y - d t
 """
 
 CITATION = (

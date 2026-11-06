@@ -30,9 +30,14 @@ def stan_data_case(seed: int = 101, n: int = 40):
     drop = rng.uniform(size=len(markers)) < 0.15
     ds.markers = markers[~drop].reset_index(drop=True)
     ids = ds.participant_ids
-    folds = pd.DataFrame({"patno": [int(i) for i in ids], "fold": rng.integers(1, 6, size=len(ids)),
-                          "cohort": ds.participants.set_index("participant_id").loc[ids, "cohort"].to_numpy(),
-                          "sex": ds.participants.set_index("participant_id").loc[ids, "sex"].to_numpy()})
+    folds = pd.DataFrame(
+        {
+            "patno": [int(i) for i in ids],
+            "fold": rng.integers(1, 6, size=len(ids)),
+            "cohort": ds.participants.set_index("participant_id").loc[ids, "cohort"].to_numpy(),
+            "sex": ds.participants.set_index("participant_id").loc[ids, "sex"].to_numpy(),
+        }
+    )
     train = [i for i, f in zip(ids, folds["fold"], strict=True) if f != 1]
     std = Standardisation.fit(ds, train, pathway=PATHWAY)
     return ds, folds, std
@@ -49,11 +54,13 @@ def write_stan_data_inputs(root: Path, ds, folds: pd.DataFrame, std: Standardisa
     wide["visit_index"] = wide.groupby("patno").cumcount()
     wide["dt_days_prev"] = wide.groupby("patno")["time_days"].diff()
     wide[["patno", "visit_index", "dt_days_prev", "updrs3", "moca", "scopa_aut", "ledd"]].to_csv(
-        pre / "visits.csv", index=False)
+        pre / "visits.csv", index=False
+    )
     base = ds.participants.copy()
     base["patno"] = base["participant_id"].astype(int)
     base[["patno", "age_baseline_years", "sex", "genotype_assay_available"]].to_csv(
-        pre / "baseline.csv", index=False)
+        pre / "baseline.csv", index=False
+    )
     om = ds.marker_matrix(PATHWAY).reset_index().rename(columns={"participant_id": "patno"})
     om["patno"] = om["patno"].astype(int)
     om.to_csv(pre / "omics.csv", index=False)
@@ -93,16 +100,27 @@ def fold_case(fold: int, seed: int = 404, n: int = 120, n_test: int = 30):
     ids = ds.participant_ids
     part = ds.participants.set_index("participant_id").loc[ids]
     order = np.random.default_rng(seed + 1).permutation(n)
-    tests = sorted(order[(fold - 1) * n_test:fold * n_test].tolist())
+    tests = sorted(order[(fold - 1) * n_test : fold * n_test].tolist())
     rng = np.random.default_rng(seed + 100 + fold)
-    sp = split_at_anchor(cohort.stan_data, tests, anchor_years=2.0, zero_dose_std=-1.5,
-                         cohort=part["cohort"].tolist(), sex=part["sex"].astype(int).tolist())
+    sp = split_at_anchor(
+        cohort.stan_data,
+        tests,
+        anchor_years=2.0,
+        zero_dose_std=-1.5,
+        cohort=part["cohort"].tolist(),
+        sex=part["sex"].astype(int).tolist(),
+    )
     y = sp.meta["y"].to_numpy(float)
     k = sp.meta["k"].to_numpy(int)
     upper = np.array([132.0, 30.0, 69.0])[k - 1]
     scale = np.array([4.0, 1.5, 3.0])[k - 1]
-    draws = np.clip(y[None, :] + rng.normal(0, 1, size=(400, len(y))) * scale[None, :]
-                    + rng.normal(0, 1, size=(1, len(y))) * scale[None, :] * 0.5, 0, upper[None, :])
+    draws = np.clip(
+        y[None, :]
+        + rng.normal(0, 1, size=(400, len(y))) * scale[None, :]
+        + rng.normal(0, 1, size=(1, len(y))) * scale[None, :] * 0.5,
+        0,
+        upper[None, :],
+    )
     age = part["age_baseline_years"].to_numpy(float)
     return sp, tests, age, draws
 

@@ -40,7 +40,7 @@ def about(file: Any = None) -> str:
 
     Validation: TESTED.
     """
-    from symphony_dt.about import about as _about
+    from symphony_dt._about import about as _about
 
     return _about(file=file)
 

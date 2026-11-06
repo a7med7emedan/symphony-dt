@@ -386,8 +386,9 @@ class Forecast:
 
 
 @validation("TESTED")
-def run_standalone_gq(exe_file: str | Path, data: str | Path, fitted_params: str | Path,
-                      output_csv: str | Path, *, seed: int) -> Path:
+def run_standalone_gq(
+    exe_file: str | Path, data: str | Path, fitted_params: str | Path, output_csv: str | Path, *, seed: int
+) -> Path:
     """Run CmdStan's standalone generate_quantities method directly on a fitted-parameters CSV.
 
     The binary is called without cmdstanpy's CSV validation, because a thinned file pooled over
@@ -399,8 +400,17 @@ def run_standalone_gq(exe_file: str | Path, data: str | Path, fitted_params: str
     import subprocess
 
     out = Path(output_csv)
-    cmd = [str(exe_file), "generate_quantities", f"fitted_params={fitted_params}", "data",
-           f"file={data}", "output", f"file={out}", "random", f"seed={seed}"]
+    cmd = [
+        str(exe_file),
+        "generate_quantities",
+        f"fitted_params={fitted_params}",
+        "data",
+        f"file={data}",
+        "output",
+        f"file={out}",
+        "random",
+        f"seed={seed}",
+    ]
     env = {**os.environ, "STAN_NUM_THREADS": "1"}
     done = subprocess.run(cmd, capture_output=True, text=True, env=env, check=False)
     if done.returncode != 0:

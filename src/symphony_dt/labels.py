@@ -78,7 +78,12 @@ def validation_status() -> dict[str, str]:
         "symphony_dt.governance",
         "symphony_dt.report",
         "symphony_dt.plots",
-        "symphony_dt.about",
+        "symphony_dt._about",
     ):
         importlib.import_module(module)
     return {name: label.value for name, label in sorted(_REGISTRY.items())}
+
+
+for _obj in (ValidationLabel, validation, registry, validation_status):
+    validation("TESTED")(_obj)
+del _obj

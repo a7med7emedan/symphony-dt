@@ -43,7 +43,7 @@ def _dataset(path: Path, mapping: str | None) -> Any:
 @app.command()
 def about() -> None:
     """Print the logo, version, author, citation and documentation address."""
-    from symphony_dt.about import about as _about
+    from symphony_dt._about import about as _about
 
     _about()
 

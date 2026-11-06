@@ -38,8 +38,12 @@ __all__ = [
 ]
 
 
+@validation("TESTED")
 class VisitPattern(TypedDict):
-    """The shape of one participant record: interval lengths and the endpoint mask."""
+    """The shape of one participant record: interval lengths and the endpoint mask.
+
+    Validation: TESTED.
+    """
 
     dt_days: NDArray[np.float64]
     dt_years: NDArray[np.float64]

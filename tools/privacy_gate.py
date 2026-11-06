@@ -21,9 +21,33 @@ import subprocess
 import sys
 from pathlib import Path
 
-DATA_SUFFIXES = {".csv", ".tsv", ".parquet", ".pq", ".xlsx", ".xls", ".feather", ".arrow", ".ipc",
-                 ".rds", ".rdata", ".rda", ".sav", ".dta", ".sas7bdat", ".h5", ".hdf5", ".nc", ".pkl",
-                 ".pickle", ".npy", ".npz", ".zip", ".gz", ".tar"}
+DATA_SUFFIXES = {
+    ".csv",
+    ".tsv",
+    ".parquet",
+    ".pq",
+    ".xlsx",
+    ".xls",
+    ".feather",
+    ".arrow",
+    ".ipc",
+    ".rds",
+    ".rdata",
+    ".rda",
+    ".sav",
+    ".dta",
+    ".sas7bdat",
+    ".h5",
+    ".hdf5",
+    ".nc",
+    ".pkl",
+    ".pickle",
+    ".npy",
+    ".npz",
+    ".zip",
+    ".gz",
+    ".tar",
+}
 DATA_ALLOWED_PREFIX = ("tests/data/",)
 JSON_LIMIT = 1_000_000
 IDENTIFIER = re.compile(r"\b(PATNO|patno|PAT_NO|ppmi_id|PPMI_ID|SUBJECT_ID_PPMI)\b")
@@ -42,14 +66,17 @@ ALLOW_IDENTIFIER = {
     ".dev/INVENTORY.md",
     ".dev/PROGRESS.md",
 }
-ALLOW_RESTRICTED = {"tools/privacy_gate.py", "tests/test_privacy_gate.py", ".dev/INVENTORY.md",
-                    ".dev/PROGRESS.md"}
+ALLOW_RESTRICTED = {
+    "tools/privacy_gate.py",
+    "tests/test_privacy_gate.py",
+    ".dev/INVENTORY.md",
+    ".dev/PROGRESS.md",
+}
 STALE_PREFIX = "STALE_"
 
 
 def tracked(staged: bool) -> list[str]:
-    cmd = (["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"] if staged
-           else ["git", "ls-files"])
+    cmd = ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"] if staged else ["git", "ls-files"]
     out = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
     return [line for line in out.splitlines() if line.strip()]
 
@@ -97,8 +124,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--staged", action="store_true", help="check staged files only")
     ap.add_argument("paths", nargs="*", help="explicit paths (default: all tracked files)")
     args = ap.parse_args(argv)
-    root = Path(subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True,
-                               check=True).stdout.strip())
+    root = Path(
+        subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+    )
     paths = args.paths or tracked(args.staged)
     findings = check(paths, root)
     for f in findings:

@@ -1,4 +1,5 @@
 """Stub of the study's `paths` module: constants and synthetic file locations only."""
+
 import os
 from pathlib import Path
 

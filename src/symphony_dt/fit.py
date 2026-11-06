@@ -106,8 +106,13 @@ class FitResult:
         fit = cmdstanpy.from_csv(self.csv_files)
         idata = az.from_cmdstanpy(posterior=fit)
         if globals_only:
-            drop = [v for v in idata.posterior.data_vars if v in ("s0", "b_raw", "eps", "bmat")]
-            idata.posterior = idata.posterior.drop_vars(drop)
+            post = idata["posterior"]
+            names = list(post.data_vars)
+            drop = [v for v in names if v in ("s0", "b_raw", "eps", "bmat")]
+            if hasattr(post, "to_dataset"):  # ArviZ 1.x: an xarray DataTree
+                idata["posterior"] = post.to_dataset().drop_vars(drop)
+            else:  # ArviZ 0.x: InferenceData with Dataset groups
+                idata.posterior = post.drop_vars(drop)
         return idata
 
     def save_manifest(self) -> Path:

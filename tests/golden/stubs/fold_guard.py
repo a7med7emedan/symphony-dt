@@ -1,4 +1,5 @@
 """Stub of the study's `fold_guard`: the fold scope and its training digest."""
+
 import hashlib
 from dataclasses import dataclass
 

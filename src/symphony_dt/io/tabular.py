@@ -138,7 +138,7 @@ def read_dataset(directory: str | Path) -> TwinDataset:
         p = src / f"{name}{suffix}"
         if not p.exists():
             return None
-        frame = read_table(p)
+        frame = read_table(p, dtype={"participant_id": str}) if suffix in (".csv", ".tsv") else read_table(p)
         if "participant_id" in frame.columns:
             frame["participant_id"] = frame["participant_id"].astype(str)
         return frame

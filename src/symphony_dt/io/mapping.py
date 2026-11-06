@@ -231,7 +231,9 @@ def apply_mapping(
     part = pd.DataFrame({"participant_id": ptab[ps.id].astype(str)})
     if ps.cohort.column:
         codes = ptab[ps.cohort.column].astype(str)
-        part["cohort"] = codes.map(ps.cohort.values).fillna(ps.cohort.default or "unknown").to_numpy()
+        part["cohort"] = (
+            codes.map(ps.cohort.values).astype(object).fillna(ps.cohort.default or "unknown").to_numpy()
+        )
         if not ps.cohort.values:
             part["cohort"] = codes.to_numpy()
     else:
