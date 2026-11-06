@@ -69,4 +69,10 @@ Workflows: ci.yml (gates, lint, test matrix ubuntu/macos x 3.11-3.13, docs, pack
 release.yml (TestPyPI for rc tags, PyPI for final, attestations, SBOM, GitHub release), codeql.yml,
 scorecard.yml, dependabot.yml. Golden tests: exact on the generating platform (Darwin-arm64), 1e-12 elsewhere.
 
-## Step 9. GitHub: NEXT
+## Step 9. GitHub: IN PROGRESS
+v2 pushed; PR https://github.com/a7med7emedan/symphony-dt/pull/2 (v2 -> main) opened.
+Repo description, topics (7), homepage set; Pages enabled with build_type workflow; main protected
+(required checks: gates, lint, tests ubuntu/macos 3.12, docs, package; no force push, no deletion);
+environments testpypi and pypi created. Social preview image needs the web UI (human step).
+Local wheel built, twine check PASS, clean-venv install ran about + quickstart (fit, gates, GQ, score).
+
