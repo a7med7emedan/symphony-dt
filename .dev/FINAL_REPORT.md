@@ -37,5 +37,7 @@ tutorials executed without error; privacy gate 0 findings; model-sha gate MATCH;
 
 Code of record run read-only on synthetic cases (tests/golden/generate.py): stan_data.build, simulate_replicate
 (draw for draw, latents, flatten_theta, initial_values), sbc.retained_chains, chi_squared_uniformity, _thin, _rank,
-score_fold.py folds 1 to 3 (score_fold.py sha 946eb88b...), pool_folds.py (ed133786...). 9 of 9 PASS, exact
-equality on Darwin arm64. On Linux the EM fit agrees to about 1e-9; CI uses 1e-6 relative there.
+score_fold.py folds 1 to 3 (score_fold.py sha 946eb88b...), pool_folds.py (ed133786...). 9 of 9 PASS with exact
+equality on the machine that generated the fixtures (SDT_GOLDEN_EXACT=1), and the regeneration test reruns the
+code of record there and matches every fixture digest. On other machines the EM loop of the mixed model can stop a
+few iterations apart (8032 against 8038 on Linux), so CI compares at 1e-4 relative with a 1% iteration window.

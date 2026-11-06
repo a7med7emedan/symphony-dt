@@ -24,5 +24,6 @@ Everything else is TESTED or EXPERIMENTAL and must not be presented as validated
 
 ## Releases
 
-Releases are published from GitHub Actions with PyPI trusted publishing and attestations. A release requires CI to
-pass, including the privacy gate and the model-sha gate. Each release attaches a CycloneDX SBOM.
+Packages are published from GitHub Actions with PyPI trusted publishing and attestations. A release requires CI to
+pass, including the privacy gate and the model-sha gate. The maintainer creates each GitHub release and attaches a
+CycloneDX SBOM. Pull requests and merges are made by the maintainer; no bot opens or merges them.

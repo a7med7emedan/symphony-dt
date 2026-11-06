@@ -1,5 +1,9 @@
 name: Release
 
+# Publishes to TestPyPI (release candidates) and PyPI (final releases) by trusted publishing.
+# The GitHub release itself is created by the maintainer, not by a bot, with the SBOM artifact
+# from the build job attached.
+
 on:
   push:
     tags: ["v*"]
@@ -70,25 +74,3 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # release/v1
         with:
           attestations: true
-
-  github-release:
-    name: GitHub release with SBOM and logo
-    if: ${{ !contains(github.ref_name, 'rc') }}
-    needs: pypi
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
-        with: {name: dist, path: dist/}
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
-        with: {name: sbom, path: sbom/}
-      - name: Create the release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          awk '/^## \[/{n++} n==1' CHANGELOG.md > notes.md
-          gh release create "$GITHUB_REF_NAME" dist/* sbom/dist-sbom.cdx.json \
-            docs/assets/logo/symphony-dt-1024.png docs/assets/logo/social-preview.png \
-            --title "symphony-dt $GITHUB_REF_NAME" --notes-file notes.md --verify-tag
