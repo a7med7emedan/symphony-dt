@@ -12,7 +12,15 @@ from symphony_dt.data.dataset import TwinDataset
 from symphony_dt.data.instruments import Instrument, InstrumentRegistry
 from symphony_dt.labels import validation
 
-__all__ = ["read_dataset", "read_table", "to_pandas", "write_dataset", "write_table"]
+__all__ = [
+    "SUPPORTED_FORMATS",
+    "read_dataset",
+    "read_query",
+    "read_table",
+    "to_pandas",
+    "write_dataset",
+    "write_table",
+]
 
 _FORMATS = {
     ".csv": "csv",
@@ -25,6 +33,28 @@ _FORMATS = {
     ".arrow": "arrow",
     ".feather": "arrow",
     ".ipc": "arrow",
+    ".dta": "stata",
+    ".sas7bdat": "sas",
+    ".xpt": "sas",
+    ".sav": "spss",
+    ".zsav": "spss",
+    ".jsonl": "jsonl",
+    ".ndjson": "jsonl",
+    ".json": "json",
+}
+
+#: Formats `read_table` accepts, with the optional package each needs.
+SUPPORTED_FORMATS: dict[str, str] = {
+    "csv": "built in",
+    "tsv": "built in",
+    "json": "built in",
+    "jsonl": "built in",
+    "stata": "built in",
+    "sas": "built in (read only)",
+    "parquet": "pyarrow",
+    "arrow": "pyarrow",
+    "excel": "openpyxl",
+    "spss": "pyreadstat (read only)",
 }
 
 
@@ -73,6 +103,22 @@ def read_table(path: str | Path, format: str | None = None, **kwargs: Any) -> pd
     if fmt == "arrow":
         frame = pd.read_feather(p, **kwargs)
         return frame
+    if fmt == "stata":
+        frame = pd.read_stata(p, **kwargs)
+        return frame
+    if fmt == "sas":
+        kwargs.setdefault("encoding", "infer")
+        frame = pd.read_sas(p, **kwargs)
+        return frame
+    if fmt == "spss":
+        frame = pd.read_spss(p, **kwargs)
+        return frame
+    if fmt == "jsonl":
+        frame = pd.read_json(p, lines=True, **kwargs)
+        return frame
+    if fmt == "json":
+        frame = pd.read_json(p, orient=kwargs.pop("orient", "records"), **kwargs)
+        return frame
     raise ValueError(f"unknown format {fmt!r}")
 
 
@@ -95,9 +141,39 @@ def write_table(frame: Any, path: str | Path, format: str | None = None) -> Path
         df.to_excel(p, index=False)
     elif fmt == "arrow":
         df.reset_index(drop=True).to_feather(p)
+    elif fmt == "stata":
+        df.to_stata(p, write_index=False)
+    elif fmt == "jsonl":
+        df.to_json(p, orient="records", lines=True)
+    elif fmt == "json":
+        df.to_json(p, orient="records")
     else:
         raise ValueError(f"unknown format {fmt!r}")
     return p
+
+
+@validation("TESTED")
+def read_query(query: str, connection: Any) -> pd.DataFrame:
+    """Run a SQL query and return a DataFrame.
+
+    `connection` is a path to a DuckDB or SQLite file, or an open DB-API or SQLAlchemy connection.
+    Use it to pull cohort tables straight from a warehouse, for example an OMOP database.
+
+    Validation: TESTED.
+    """
+    if isinstance(connection, str | Path):
+        path = str(connection)
+        if path.endswith((".duckdb", ".ddb")):
+            import duckdb
+
+            with duckdb.connect(path, read_only=True) as con:
+                frame: pd.DataFrame = con.execute(query).df()
+            return frame
+        import sqlite3
+
+        with sqlite3.connect(path) as con:
+            return pd.read_sql_query(query, con)
+    return pd.read_sql_query(query, connection)
 
 
 @validation("TESTED")
@@ -147,9 +223,7 @@ def read_dataset(directory: str | Path) -> TwinDataset:
     if participants is None or observations is None:
         raise FileNotFoundError(f"{src} lacks participants or observations")
     instruments = InstrumentRegistry(Instrument(**i) for i in meta["instruments"])
-    ds = TwinDataset(
-        participants, observations, load("visits"), load("markers"), instruments, meta.get("metadata")
-    )
+    ds = TwinDataset(participants, observations, load("visits"), load("markers"), instruments, meta.get("metadata"))
     if ds.fingerprint() != meta["fingerprint"]:
         raise ValueError(f"{src}: dataset fingerprint differs from dataset.json")
     return ds

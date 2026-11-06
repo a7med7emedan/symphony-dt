@@ -86,15 +86,11 @@ def validate_data(
     except DataValidationError as err:
         console.print(f"[red]INVALID[/red] {err}")
         raise typer.Exit(code=1) from err
-    console.print_json(
-        json.dumps({"valid": True, "fingerprint": ds.fingerprint(), **ds.summary(min_cell=min_cell)})
-    )
+    console.print_json(json.dumps({"valid": True, "fingerprint": ds.fingerprint(), **ds.summary(min_cell=min_cell)}))
 
 
 @app.command()
-def envelope(
-    path: Path, mapping: Annotated[str | None, typer.Option(help="Mapping for a table.")] = None
-) -> None:
+def envelope(path: Path, mapping: Annotated[str | None, typer.Option(help="Mapping for a table.")] = None) -> None:
     """Check a dataset against the pd_v2 validity envelope."""
     from symphony_dt.data import check_envelope
 
@@ -168,6 +164,7 @@ def fit(
     threads: int = 1,
     resume: bool = False,
     inits: Annotated[str, typer.Option(help="prior or random.")] = "prior",
+    chain_ids: Annotated[str | None, typer.Option(help="Run only these chains, e.g. 3 or 1,2 (Slurm arrays).")] = None,
 ) -> None:
     """Fit pd_v2 with CmdStan and print the gate verdict."""
     from symphony_dt.data import StanData, build_stan_data
@@ -184,7 +181,11 @@ def fit(
         output_dir=out,
         resume=resume,
         inits="random" if inits == "random" else "prior",
+        chain_ids=[int(c) for c in chain_ids.split(",")] if chain_ids else None,
     )
+    if chain_ids:
+        console.print(f"chain(s) {chain_ids} complete in {out}; run `symphony-dt gates {out}` once all have finished")
+        return
     report = result.gates()
     result.manifest["gates"] = {k: v for k, v in report.to_dict().items() if k != "diagnostics"}
     result.save_manifest()
@@ -313,9 +314,7 @@ def ppc(fit_dir: Path, out: OutOpt = Path("ppc"), keep: int = 400, seed: int = 1
 
 
 @app.command()
-def report(
-    manifests: list[Path], out: OutOpt = Path("report.html"), title: str = "symphony-dt report"
-) -> None:
+def report(manifests: list[Path], out: OutOpt = Path("report.html"), title: str = "symphony-dt report") -> None:
     """Write an HTML report from one or more run manifests."""
     from symphony_dt.report import write_html_report
 
@@ -336,6 +335,225 @@ def reproduce(manifest: Path, workdir: Annotated[Path | None, typer.Option()] = 
     console.print(f"REPRODUCED {result.reproduced}")
     if not result.reproduced:
         raise typer.Exit(code=1)
+
+
+# ------------------------------------------------------------------------------------------------- 2.1 workflow
+@app.command()
+def init(directory: Annotated[Path, typer.Argument(help="Folder for the new study.")] = Path(".")) -> None:
+    """Write a commented study.yaml template."""
+    from symphony_dt.study import init_study
+
+    console.print(f"wrote {init_study(directory)}")
+
+
+@app.command()
+def run(
+    study: Annotated[Path, typer.Argument(help="The study.yaml file.")],
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Stop before fitting.")] = False,
+    stages: Annotated[str | None, typer.Option(help="Comma-separated stages to run.")] = None,
+    force: Annotated[bool, typer.Option(help="Rerun complete stages.")] = False,
+) -> None:
+    """Run a study file stage by stage, skipping stages already complete."""
+    from symphony_dt.study import run_study
+
+    result = run_study(study, stages=stages.split(",") if stages else None, dry_run=dry_run, force=force)
+    for name, state in result.summary().items():
+        console.print(f"{name:12s} {state}")
+    console.print(f"outputs in {result.root}")
+
+
+@app.command()
+def eligibility(
+    path: Path,
+    rules: Annotated[Path, typer.Option(help="YAML list of rules, as in a study file.")],
+    mapping: Annotated[str | None, typer.Option(help="Mapping for a table.")] = None,
+    min_cell: int = 10,
+) -> None:
+    """Apply eligibility rules to a dataset and print the attrition table."""
+    import yaml
+
+    from symphony_dt.data import apply_eligibility
+
+    spec = yaml.safe_load(rules.read_text())
+    result = apply_eligibility(
+        _dataset(path, mapping), spec.get("eligibility", spec) if isinstance(spec, dict) else spec
+    )
+    console.print(result.to_markdown(min_cell=min_cell))
+
+
+@app.command()
+def profile(
+    path: Path, mapping: Annotated[str | None, typer.Option(help="Mapping for a table.")] = None, min_cell: int = 10
+) -> None:
+    """Profile a dataset: coverage, visits, intervals and boundary shares."""
+    from symphony_dt.data import profile as _profile
+
+    console.print(_profile(_dataset(path, mapping), min_cell=min_cell).to_markdown())
+
+
+@app.command()
+def bench(
+    out: OutOpt = Path("benchmark.csv"),
+    n: int = 120,
+    n_test: int = 40,
+    seed: int = 0,
+    scenarios: Annotated[str | None, typer.Option(help="Comma-separated scenarios.")] = None,
+) -> None:
+    """Run the open synthetic benchmark (oracle population) and write a tidy table."""
+    from symphony_dt.bench import SCENARIOS, run_benchmark
+
+    table = run_benchmark(scenarios.split(",") if scenarios else SCENARIOS, n=n, n_test=n_test, seed=seed)
+    table.to_csv(out, index=False)
+    view = table[
+        (table["window"] == "all")
+        & table["metric"].isin(["c95", "crps"])
+        & table["method"].isin(["twin", "locf", "lmm"])
+    ]
+    console.print(
+        view.pivot_table(index=["scenario", "endpoint"], columns=["metric", "method"], values="estimate")
+        .round(3)
+        .to_string()
+    )
+
+
+@app.command()
+def schema(name: Annotated[str, typer.Argument(help="study, dataset or visit.")]) -> None:
+    """Print a JSON Schema for the study file, the dataset tables or a twin visit."""
+    from symphony_dt.compute import json_schema
+
+    print(json.dumps(json_schema(name), indent=2))  # type: ignore[arg-type]
+
+
+@app.command()
+def container(kind: Annotated[str, typer.Argument(help="docker or apptainer.")] = "docker") -> None:
+    """Print a Dockerfile or an Apptainer definition with CmdStan."""
+    from symphony_dt.compute import container_recipe
+
+    print(container_recipe(kind))  # type: ignore[arg-type]
+
+
+@app.command()
+def slurm(
+    data: Path,
+    out: OutOpt = Path("fit"),
+    chains: int = 4,
+    warmup: int = 1000,
+    draws: int = 1000,
+    threads: int = 1,
+    time: str = "24:00:00",
+    mem: str = "16G",
+    partition: str | None = None,
+    account: str | None = None,
+) -> None:
+    """Print an sbatch job array: one chain per task, then the gates."""
+    from symphony_dt.compute import slurm_script
+
+    print(
+        slurm_script(
+            data,
+            out,
+            chains=chains,
+            warmup=warmup,
+            draws=draws,
+            threads_per_chain=threads,
+            time=time,
+            mem=mem,
+            partition=partition,
+            account=account,
+        )
+    )
+
+
+bundle_app = typer.Typer(help="Portable run bundles.")
+app.add_typer(bundle_app, name="bundle")
+
+
+@bundle_app.command("write")
+def bundle_write(files: list[Path], out: OutOpt = Path("run-bundle.tar.gz"), note: str = "") -> None:
+    """Pack files with SHA256SUMS and an environment lock."""
+    from symphony_dt.compute import write_bundle
+
+    console.print(f"wrote {write_bundle(files, out, note=note)}")
+
+
+@bundle_app.command("verify")
+def bundle_verify(bundle: Path) -> None:
+    """Check every file of a bundle against its digest."""
+    from symphony_dt.compute import verify_bundle
+
+    result = verify_bundle(bundle)
+    for name, ok in result.items():
+        console.print(f"{'MATCH ' if ok else 'DIFFER'} {name}")
+    if not all(result.values()):
+        raise typer.Exit(code=1)
+
+
+twin_app = typer.Typer(help="Living twins (EXPERIMENTAL).")
+app.add_typer(twin_app, name="twin")
+
+
+@twin_app.command("create")
+def twin_create(
+    fit_dir: Path,
+    dataset: Path,
+    participant: str,
+    out: OutOpt = Path("twin"),
+    particles: int = 1000,
+    draws: int = 200,
+    seed: int = 0,
+) -> None:
+    """Create a twin from a population fit and one participant's history."""
+    from symphony_dt.data import Standardisation
+    from symphony_dt.fit import load_fit
+    from symphony_dt.io import read_dataset
+    from symphony_dt.twin import ParticipantTwin, PopulationDraws
+
+    ds = read_dataset(dataset)
+    pop = PopulationDraws.from_fit(load_fit(fit_dir), n_draws=draws)
+    twin = ParticipantTwin.create(
+        pop, ds.subset([participant]), standardisation=Standardisation.fit(ds), n_particles=particles, seed=seed
+    )
+    console.print(f"saved {twin.save(out)}; {twin.status()['visits']} visits replayed")
+
+
+@twin_app.command("forecast")
+def twin_forecast(twin: Path, horizons: str = "1,2") -> None:
+    """Print forecast quantiles and the uncertainty split."""
+    from symphony_dt.twin import ParticipantTwin
+
+    t = ParticipantTwin.load(twin)
+    fc = t.forecast([float(h) for h in horizons.split(",")])
+    console.print(fc.quantiles().round(2).to_string())
+    console.print(pd_frame(fc.metadata["uncertainty"]).round(3).to_string())
+
+
+@twin_app.command("next-visit")
+def twin_next_visit(
+    twin: Path, candidates: str = "0.25,0.5,1,1.5", target: float = 2.0, endpoint: str = "updrs3"
+) -> None:
+    """Rank candidate visit times by expected reduction in forecast variance."""
+    from symphony_dt.twin import ParticipantTwin
+
+    t = ParticipantTwin.load(twin)
+    console.print(
+        t.next_visit([float(c) for c in candidates.split(",")], target_years=target, endpoint=endpoint)
+        .round(4)
+        .to_string()
+    )
+
+
+@twin_app.command("serve")
+def twin_serve(twin: Path) -> None:
+    """Serve a saved twin over JSON lines on standard input and output."""
+    from symphony_dt.compute import serve_twin
+
+    serve_twin(twin)
+
+
+def pd_frame(rows: Any) -> Any:
+    import pandas as pd
+
+    return pd.DataFrame(rows)
 
 
 def main() -> None:

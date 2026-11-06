@@ -40,9 +40,7 @@ finite = st.floats(min_value=-1e3, max_value=1e3, allow_nan=False, allow_infinit
 @settings(max_examples=150, deadline=None)
 @given(st.lists(finite, min_size=1, max_size=60), finite)
 def test_crps_equals_properscoring(samples, y):
-    assert crps_ensemble(samples, y) == pytest.approx(
-        float(ps.crps_ensemble(y, np.array(samples))), rel=1e-9, abs=1e-9
-    )
+    assert crps_ensemble(samples, y) == pytest.approx(float(ps.crps_ensemble(y, np.array(samples))), rel=1e-9, abs=1e-9)
 
 
 @settings(max_examples=80, deadline=None)

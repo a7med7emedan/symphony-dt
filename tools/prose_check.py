@@ -30,10 +30,7 @@ def files() -> list[Path]:
     return [
         Path(p)
         for p in out
-        if not p.startswith(SKIP_PREFIX)
-        and p not in SKIP_FILES
-        and Path(p).suffix in TEXT_SUFFIX
-        and Path(p).exists()
+        if not p.startswith(SKIP_PREFIX) and p not in SKIP_FILES and Path(p).suffix in TEXT_SUFFIX and Path(p).exists()
     ]
 
 

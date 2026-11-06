@@ -57,9 +57,7 @@ def harmonise(dataset: TwinDataset, crosswalks: Iterable[Crosswalk]) -> TwinData
     applied: list[dict[str, str]] = []
     if "instrument_version" in obs.columns:
         for cw in crosswalks:
-            rows = (obs["endpoint"] == cw.endpoint) & (
-                obs["instrument_version"].astype(str) == cw.source_version
-            )
+            rows = (obs["endpoint"] == cw.endpoint) & (obs["instrument_version"].astype(str) == cw.source_version)
             if rows.any():
                 obs.loc[rows, "value"] = cw.convert(obs.loc[rows, "value"].to_numpy(float))
                 obs.loc[rows, "instrument_version"] = cw.target_version
@@ -73,9 +71,7 @@ def harmonise(dataset: TwinDataset, crosswalks: Iterable[Crosswalk]) -> TwinData
                     }
                 )
     metadata = {**dataset.metadata, "harmonisation": applied}
-    return TwinDataset(
-        dataset.participants, obs, dataset.visits, dataset.markers, dataset.instruments, metadata
-    )
+    return TwinDataset(dataset.participants, obs, dataset.visits, dataset.markers, dataset.instruments, metadata)
 
 
 @validation("TESTED")

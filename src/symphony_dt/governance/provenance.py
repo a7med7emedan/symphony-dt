@@ -46,9 +46,7 @@ class ProvenanceDocument:
         self.entities[ident] = {"prov:type": kind, "sdt:sha256": sha256, **attributes}
         return ident
 
-    def activity(
-        self, name: str, *, started: str | None = None, ended: str | None = None, **attributes: Any
-    ) -> str:
+    def activity(self, name: str, *, started: str | None = None, ended: str | None = None, **attributes: Any) -> str:
         """Add an activity and return its PROV id.
 
         Validation: TESTED.

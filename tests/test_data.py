@@ -152,9 +152,7 @@ def test_envelope_versions_missing_and_single_visits():
     v = pd.DataFrame({"participant_id": ["a", "a", "b", "c"], "time_days": [0, 0, 0, 0], "ledd": 0.0})
     r = check_envelope(TwinDataset(p, o, visits=v))
     assert {"ENV001", "ENV002", "ENV006", "ENV008", "ENV010"} <= set(r.codes())
-    reg = InstrumentRegistry(
-        [Instrument(name="updrs3", version="v9", lower=0, upper=132, worsening="increase")]
-    )
+    reg = InstrumentRegistry([Instrument(name="updrs3", version="v9", lower=0, upper=132, worsening="increase")])
     r2 = check_envelope(TwinDataset(p, o, instruments=reg))
     assert "ENV002" in r2.codes()
 

@@ -6,11 +6,13 @@ Every public function and class carries one of three labels.
 - **TESTED**: correct on synthetic data and unit tests, not validated on a clinical cohort.
 - **EXPERIMENTAL**: works and is tested, but its design is not settled.
 
-Counts: 43 VALIDATED, 106 TESTED, 3 EXPERIMENTAL.
+Counts: 43 VALIDATED, 157 TESTED, 14 EXPERIMENTAL.
 
 | object | label |
 |---|---|
 | `_about.about` | <span class="validation-TESTED">TESTED</span> |
+| `bench.run_benchmark` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `bench.scenario_cohort` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
 | `calibration.ppc.boundary_statistics` | <span class="validation-TESTED">TESTED</span> |
 | `calibration.ppc.pit_values` | <span class="validation-TESTED">TESTED</span> |
 | `calibration.ppc.ppc_coverage` | <span class="validation-TESTED">TESTED</span> |
@@ -26,9 +28,28 @@ Counts: 43 VALIDATED, 106 TESTED, 3 EXPERIMENTAL.
 | `calibration.sbc.run_sbc` | <span class="validation-TESTED">TESTED</span> |
 | `calibration.sbc.sbc_rank` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `calibration.sbc.thin_for_rank` | <span class="validation-VALIDATED">VALIDATED</span> |
+| `compute.container_recipe` | <span class="validation-TESTED">TESTED</span> |
+| `compute.json_schema` | <span class="validation-TESTED">TESTED</span> |
+| `compute.serve_twin` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `compute.slurm_script` | <span class="validation-TESTED">TESTED</span> |
+| `compute.verify_bundle` | <span class="validation-TESTED">TESTED</span> |
+| `compute.write_bundle` | <span class="validation-TESTED">TESTED</span> |
 | `config.ModelConfig` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `data.dataset.TwinDataset` | <span class="validation-TESTED">TESTED</span> |
 | `data.dataset.participant_sort_key` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.AgeRange` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.CohortIn` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.CustomRule` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.EligibilityCriteria` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.EligibilityResult` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.EligibilityRule` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.MaxGap` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.MinEndpointObservations` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.MinFollowUp` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.MinVisits` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.RequiredAtBaseline` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.apply_eligibility` | <span class="validation-TESTED">TESTED</span> |
+| `data.eligibility.rule_from_dict` | <span class="validation-TESTED">TESTED</span> |
 | `data.envelope.EnvelopeReport` | <span class="validation-TESTED">TESTED</span> |
 | `data.envelope.EnvelopeWarning` | <span class="validation-TESTED">TESTED</span> |
 | `data.envelope.check_envelope` | <span class="validation-TESTED">TESTED</span> |
@@ -39,6 +60,8 @@ Counts: 43 VALIDATED, 106 TESTED, 3 EXPERIMENTAL.
 | `data.instruments.Instrument` | <span class="validation-TESTED">TESTED</span> |
 | `data.instruments.InstrumentRegistry` | <span class="validation-TESTED">TESTED</span> |
 | `data.instruments.default_registry` | <span class="validation-TESTED">TESTED</span> |
+| `data.profile.DataProfile` | <span class="validation-TESTED">TESTED</span> |
+| `data.profile.profile` | <span class="validation-TESTED">TESTED</span> |
 | `data.simulate.SimulatedCohort` | <span class="validation-TESTED">TESTED</span> |
 | `data.simulate.VisitPattern` | <span class="validation-TESTED">TESTED</span> |
 | `data.simulate.coupling_matrix` | <span class="validation-VALIDATED">VALIDATED</span> |
@@ -132,9 +155,12 @@ Counts: 43 VALIDATED, 106 TESTED, 3 EXPERIMENTAL.
 | `io.mapping.apply_mapping` | <span class="validation-TESTED">TESTED</span> |
 | `io.mapping.list_mappings` | <span class="validation-TESTED">TESTED</span> |
 | `io.mapping.load_mapping` | <span class="validation-TESTED">TESTED</span> |
+| `io.meds.from_meds` | <span class="validation-TESTED">TESTED</span> |
+| `io.meds.to_meds` | <span class="validation-TESTED">TESTED</span> |
 | `io.posterior.read_posterior` | <span class="validation-TESTED">TESTED</span> |
 | `io.posterior.write_posterior` | <span class="validation-TESTED">TESTED</span> |
 | `io.tabular.read_dataset` | <span class="validation-TESTED">TESTED</span> |
+| `io.tabular.read_query` | <span class="validation-TESTED">TESTED</span> |
 | `io.tabular.read_table` | <span class="validation-TESTED">TESTED</span> |
 | `io.tabular.to_pandas` | <span class="validation-TESTED">TESTED</span> |
 | `io.tabular.write_dataset` | <span class="validation-TESTED">TESTED</span> |
@@ -152,13 +178,49 @@ Counts: 43 VALIDATED, 106 TESTED, 3 EXPERIMENTAL.
 | `models.list_models` | <span class="validation-TESTED">TESTED</span> |
 | `models.model_card` | <span class="validation-TESTED">TESTED</span> |
 | `models.register_model` | <span class="validation-TESTED">TESTED</span> |
+| `outputs.forecast_table` | <span class="validation-TESTED">TESTED</span> |
+| `outputs.posterior_summary` | <span class="validation-TESTED">TESTED</span> |
+| `outputs.scores_table` | <span class="validation-TESTED">TESTED</span> |
+| `outputs.tidy_summary` | <span class="validation-TESTED">TESTED</span> |
+| `outputs.write_tables` | <span class="validation-TESTED">TESTED</span> |
+| `plots.participant_report` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_attrition` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_cohort_trajectories` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_coverage_by_window` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_coverage_calibration` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_crps_differences` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_effects` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_energy` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_forecast` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_pit` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_ppc_intervals` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_profile` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_rank` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_rank_histogram` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_reliability` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_trace` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_trajectory` | <span class="validation-TESTED">TESTED</span> |
+| `plots.save_figure` | <span class="validation-TESTED">TESTED</span> |
 | `report.figure_to_html` | <span class="validation-TESTED">TESTED</span> |
 | `report.html_report` | <span class="validation-TESTED">TESTED</span> |
 | `report.write_html_report` | <span class="validation-TESTED">TESTED</span> |
+| `study.DataSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.ForecastSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.ModelSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.OutputSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.OverrideSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.SamplerSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.SplitSection` | <span class="validation-TESTED">TESTED</span> |
+| `study.StudyConfig` | <span class="validation-TESTED">TESTED</span> |
+| `study.StudyResult` | <span class="validation-TESTED">TESTED</span> |
+| `study.init_study` | <span class="validation-TESTED">TESTED</span> |
+| `study.load_study` | <span class="validation-TESTED">TESTED</span> |
+| `study.run_study` | <span class="validation-TESTED">TESTED</span> |
+| `twin.lifecycle.ParticipantTwin` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.lifecycle.PopulationDraws` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.lifecycle.Visit` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.monitor.AdaptiveConformal` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.monitor.CalibrationMonitor` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.monitor.RelearnDecision` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.monitor.RelearnPolicy` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |
+| `twin.registry.TwinRegistry` | <span class="validation-EXPERIMENTAL">EXPERIMENTAL</span> |

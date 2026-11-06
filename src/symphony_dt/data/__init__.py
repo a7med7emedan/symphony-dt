@@ -1,6 +1,21 @@
 """Data layer: the canonical dataset, instruments, envelope, harmonisation, Stan data and simulation."""
 
 from symphony_dt.data.dataset import VALIDATION_RULES, TwinDataset, participant_sort_key
+from symphony_dt.data.eligibility import (
+    AgeRange,
+    CohortIn,
+    CustomRule,
+    EligibilityCriteria,
+    EligibilityResult,
+    EligibilityRule,
+    MaxGap,
+    MinEndpointObservations,
+    MinFollowUp,
+    MinVisits,
+    RequiredAtBaseline,
+    apply_eligibility,
+    rule_from_dict,
+)
 from symphony_dt.data.envelope import (
     ENVELOPE_CODES,
     PD_V2_ENVELOPE,
@@ -10,6 +25,7 @@ from symphony_dt.data.envelope import (
 )
 from symphony_dt.data.harmonise import Crosswalk, UnitConverter, convert_units, harmonise
 from symphony_dt.data.instruments import Instrument, InstrumentRegistry, default_registry
+from symphony_dt.data.profile import DataProfile, profile
 from symphony_dt.data.simulate import (
     SimulatedCohort,
     VisitPattern,
@@ -35,17 +51,30 @@ __all__ = [
     "ENVELOPE_CODES",
     "PD_V2_ENVELOPE",
     "VALIDATION_RULES",
+    "AgeRange",
+    "CohortIn",
     "Crosswalk",
+    "CustomRule",
+    "DataProfile",
+    "EligibilityCriteria",
+    "EligibilityResult",
+    "EligibilityRule",
     "EnvelopeReport",
     "EnvelopeWarning",
     "Instrument",
     "InstrumentRegistry",
+    "MaxGap",
+    "MinEndpointObservations",
+    "MinFollowUp",
+    "MinVisits",
+    "RequiredAtBaseline",
     "SimulatedCohort",
     "StanData",
     "Standardisation",
     "TwinDataset",
     "UnitConverter",
     "VisitPattern",
+    "apply_eligibility",
     "build_stan_data",
     "check_envelope",
     "convert_units",
@@ -58,6 +87,8 @@ __all__ = [
     "harmonise",
     "initial_values",
     "participant_sort_key",
+    "profile",
+    "rule_from_dict",
     "simulate_cohort",
     "simulate_replicate",
     "substeps_days",

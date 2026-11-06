@@ -42,10 +42,7 @@ def _generating_machine() -> bool:
     import platform
 
     prov = load("PROVENANCE.json")
-    return (
-        prov.get("platform") == f"{platform.system()}-{platform.machine()}"
-        and prov.get("numpy") == np.__version__
-    )
+    return prov.get("platform") == f"{platform.system()}-{platform.machine()}" and prov.get("numpy") == np.__version__
 
 
 def assert_same(ours, theirs, path="root"):
@@ -178,24 +175,16 @@ def test_pool_folds_equals_code_of_record(fold_scores):
     assert_same(json.loads(pooled.to_json()), load("pooled_scores.json"))
 
 
-ANALYSIS = Path(
-    os.environ.get("SYMPHONY_V2_SRC", Path(__file__).resolve().parents[3] / "symphony_v2" / "src")
-)
+ANALYSIS = Path(os.environ.get("SYMPHONY_V2_SRC", Path(__file__).resolve().parents[3] / "symphony_v2" / "src"))
 RECORD = Path(
     os.environ.get(
         "SYMPHONY_CODE_OF_RECORD",
-        Path(__file__).resolve().parents[3]
-        / "SYMPHONY_v2_PAPER"
-        / "04_CODE_OF_RECORD"
-        / "scripts"
-        / "five_fold",
+        Path(__file__).resolve().parents[3] / "SYMPHONY_v2_PAPER" / "04_CODE_OF_RECORD" / "scripts" / "five_fold",
     )
 )
 
 
-@pytest.mark.skipif(
-    not (ANALYSIS.exists() and RECORD.exists()), reason="the study code is not on this machine"
-)
+@pytest.mark.skipif(not (ANALYSIS.exists() and RECORD.exists()), reason="the study code is not on this machine")
 def test_fixtures_still_match_a_fresh_run_of_the_code_of_record(tmp_path):
     from tests.golden.generate import run
 

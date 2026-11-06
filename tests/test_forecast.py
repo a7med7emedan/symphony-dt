@@ -121,9 +121,7 @@ def test_fast_route_with_known_parameters():
     pid = cohort.dataset.participant_ids[0]
     hist = cohort.dataset.subset([pid])
     std = Standardisation.fit(cohort.dataset)
-    fc = forecast_fast(
-        [cohort.theta], hist, [0.5, 1.0], standardisation=std, n_particles=300, n_draws=60, seed=3
-    )
+    fc = forecast_fast([cohort.theta], hist, [0.5, 1.0], standardisation=std, n_particles=300, n_draws=60, seed=3)
     assert fc.draws.shape == (60, 6) and fc.method == "fast"
     assert fc.metadata["min_ess"] >= 1.0
     lo = np.array([0, 0, 0] * 2)
@@ -131,9 +129,7 @@ def test_fast_route_with_known_parameters():
     assert np.all(fc.draws >= lo) and np.all(fc.draws <= hi)
     with pytest.raises(ValueError, match="exactly one"):
         forecast_fast([cohort.theta], cohort.dataset, [1.0])
-    sens = forecast_fast(
-        [cohort.theta], hist, [1.0], standardisation=std, n_particles=50, n_draws=5, ledd_std=0.5
-    )
+    sens = forecast_fast([cohort.theta], hist, [1.0], standardisation=std, n_particles=50, n_draws=5, ledd_std=0.5)
     assert sens.draws.shape == (5, 3)
 
 

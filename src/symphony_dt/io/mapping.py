@@ -225,15 +225,11 @@ def apply_mapping(
 
     ps = m.participants
     ptab = _filtered(tables[ps.table].copy(), ps.filter)
-    _need(
-        ptab, [ps.id, ps.age or "", ps.sex or "", ps.cohort.column or "", *ps.covariates.values()], ps.table
-    )
+    _need(ptab, [ps.id, ps.age or "", ps.sex or "", ps.cohort.column or "", *ps.covariates.values()], ps.table)
     part = pd.DataFrame({"participant_id": ptab[ps.id].astype(str)})
     if ps.cohort.column:
         codes = ptab[ps.cohort.column].astype(str)
-        part["cohort"] = (
-            codes.map(ps.cohort.values).astype(object).fillna(ps.cohort.default or "unknown").to_numpy()
-        )
+        part["cohort"] = codes.map(ps.cohort.values).astype(object).fillna(ps.cohort.default or "unknown").to_numpy()
         if not ps.cohort.values:
             part["cohort"] = codes.to_numpy()
     else:
@@ -255,9 +251,7 @@ def apply_mapping(
     obs_frames = []
     for src in m.observations:
         tab = _filtered(tables[src.table].copy(), src.filter)
-        _need(
-            tab, [src.id, src.time.column, src.value or "", src.endpoint_column or "", *src.sum_of], src.table
-        )
+        _need(tab, [src.id, src.time.column, src.value or "", src.endpoint_column or "", *src.sum_of], src.table)
         if src.sum_of:
             items = tab[src.sum_of].apply(pd.to_numeric, errors="coerce")
             value = items.sum(axis=1, min_count=len(src.sum_of))

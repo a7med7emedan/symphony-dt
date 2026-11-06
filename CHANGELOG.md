@@ -2,6 +2,29 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
+## [Unreleased] (2.1.0)
+
+### Added
+- A study file and one command: `symphony-dt init` and `symphony-dt run study.yaml`, with ten resumable stages,
+  a manifest per stage and a dry run.
+- Eligibility rules applied in sequence, with an OHDSI-style attrition table, per-rule gain and a flow chart.
+- Readers for Stata, SAS, SPSS, JSON and JSON Lines; SQL queries on DuckDB, SQLite or any connection; a MEDS reader
+  and writer; a REDCap mapping template.
+- A data profile with coverage, visits, intervals and boundary shares.
+- Tidy output tables written as CSV, Parquet and one Excel workbook.
+- Plots: trace, rank, energy, predictive intervals, coverage calibration, event reliability, cohort trajectories,
+  attrition flow, data profile and a participant report; `save_figure` writes several formats at once.
+- The living twin (EXPERIMENTAL): a tempered SMC sampler with preconditioned Crank-Nicolson moves on the
+  non-centred latent vector; uncertainty split; milestone curves; next-visit suggestions by expected information;
+  an anytime-valid calibration e-process; adaptive conformal recalibration; a relearning registry with lineage.
+- Running anywhere: run bundles with digests, Slurm job arrays with one chain per task, Docker and Apptainer
+  recipes, JSON Schemas, and a JSON-lines twin service.
+- An open synthetic benchmark of five scenarios, with LOCF and the mixed model as baselines.
+
+### Fixed
+- `fit` with `resume` now touches only the chains it was asked to run, so parallel Slurm tasks cannot clobber one
+  another.
+
 ## [2.0.1] - 2026-11-06
 
 ### Changed

@@ -91,9 +91,7 @@ class FitResult:
 
         Validation: VALIDATED.
         """
-        return assess(
-            self.csv_files, override=override, max_treedepth=int(self.settings.get("max_treedepth", 10))
-        )
+        return assess(self.csv_files, override=override, max_treedepth=int(self.settings.get("max_treedepth", 10)))
 
     def to_inference_data(self, *, globals_only: bool = True) -> Any:
         """Return an ArviZ InferenceData. With `globals_only`, per-participant blocks are dropped.
@@ -171,11 +169,7 @@ def fit(
 
     spec = get_model(model)
     ids = list(chain_ids) if chain_ids is not None else list(range(1, chains + 1))
-    out = (
-        Path(output_dir)
-        if output_dir is not None
-        else Path.cwd() / "symphony_runs" / f"fit-{int(time.time())}"
-    )
+    out = Path(output_dir) if output_dir is not None else Path.cwd() / "symphony_runs" / f"fit-{int(time.time())}"
     out.mkdir(parents=True, exist_ok=True)
     data_path = stan_data.to_json(out / "stan_data.json")
     exe = compile_model(model, "model")
@@ -197,13 +191,11 @@ def fit(
     chain_dir = out / "chains"
     chain_dir.mkdir(parents=True, exist_ok=True)
     found = _chains_by_id(chain_dir)
-    if found and not resume:
+    if any(cid in ids for cid in found) and not resume:
         raise FileExistsError(f"{chain_dir} already holds chains; pass resume=True or a new output_dir")
-    complete = {
-        cid: path for cid, path in found.items() if cid in ids and chain_is_complete(path, iter_sampling)
-    }
+    complete = {cid: path for cid, path in found.items() if cid in ids and chain_is_complete(path, iter_sampling)}
     for cid, path in found.items():
-        if cid not in complete:
+        if cid in ids and cid not in complete:
             path.rename(path.with_name(f"STALE_{int(time.time())}_{path.name}"))
     missing = [cid for cid in ids if cid not in complete]
     csv_files = [str(p) for p in complete.values()]

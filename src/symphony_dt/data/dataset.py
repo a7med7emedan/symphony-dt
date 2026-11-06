@@ -169,9 +169,7 @@ class TwinDataset:
         values = pd.to_numeric(o["value"], errors="coerce").to_numpy(float)
         bad_v = ~np.isfinite(values)
         if bad_v.any():
-            raise DataValidationError(
-                "DV006", f"observation values are missing or non-finite at {_rows(bad_v, o)}"
-            )
+            raise DataValidationError("DV006", f"observation values are missing or non-finite at {_rows(bad_v, o)}")
         o["value"] = values
         lower = o["endpoint"].map({i.name: i.lower for i in self.instruments}).to_numpy(float)
         upper = o["endpoint"].map({i.name: i.upper for i in self.instruments}).to_numpy(float)
@@ -254,9 +252,7 @@ class TwinDataset:
         Validation: TESTED.
         """
         names = list(names)
-        wide = self.markers.pivot_table(
-            index="participant_id", columns="name", values="value", aggfunc="first"
-        )
+        wide = self.markers.pivot_table(index="participant_id", columns="name", values="value", aggfunc="first")
         return wide.reindex(index=self.participant_ids, columns=names)
 
     def subset(self, participant_ids: Iterable[str]) -> TwinDataset:
@@ -291,9 +287,7 @@ class TwinDataset:
             "observations": len(self.observations),
             "visits": len(visits),
             "median_visits_per_participant": float(per.median()) if len(per) else 0.0,
-            "max_follow_up_years": round(float(visits["time_days"].max()) / 365.25, 2)
-            if len(visits)
-            else 0.0,
+            "max_follow_up_years": round(float(visits["time_days"].max()) / 365.25, 2) if len(visits) else 0.0,
             "cohorts": {str(k): cell(int(v)) for k, v in self.participants["cohort"].value_counts().items()},
             "observations_by_endpoint": {
                 str(k): int(v) for k, v in self.observations["endpoint"].value_counts().items()
