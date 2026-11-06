@@ -30,6 +30,15 @@ def load(name: str):
 
 
 def _same_platform() -> bool:
+    """True only when the run opts in to exact comparison with SDT_GOLDEN_EXACT=1.
+
+    Exactness holds on the machine that generated the fixtures. A platform label is not enough:
+    two Apple-silicon machines with the same numpy can still differ in the last bits.
+    """
+    return os.environ.get("SDT_GOLDEN_EXACT") == "1"
+
+
+def _generating_machine() -> bool:
     import platform
 
     prov = load("PROVENANCE.json")
@@ -193,5 +202,5 @@ def test_fixtures_still_match_a_fresh_run_of_the_code_of_record(tmp_path):
     prov = run(ANALYSIS, RECORD, tmp_path)
     assert prov["analysis_src"] == load("PROVENANCE.json")["analysis_src"]
     assert prov["code_of_record"] == load("PROVENANCE.json")["code_of_record"]
-    if _same_platform():
+    if _generating_machine():
         assert prov["fixtures"] == load("PROVENANCE.json")["fixtures"]
