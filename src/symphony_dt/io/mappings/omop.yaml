@@ -1,0 +1,19 @@
+# OMOP CDM v5.4. The concept ids below are EMPTY on purpose: set them to the concept ids your
+# vocabulary uses for the MDS-UPDRS Part III total, the MoCA total and the SCOPA-AUT total, then pass
+# the edited file. LEDD, when present, is read as an already-computed value from OBSERVATION.
+name: omop
+description: OMOP CDM PERSON, MEASUREMENT and OBSERVATION tables.
+participants:
+  table: person
+  id: person_id
+  cohort: {default: unknown}
+  age: age_at_first
+  sex: gender_concept_id
+  sex_values: {"8532": 0, "8507": 1}
+observations:
+  - table: measurement
+    id: person_id
+    time: {column: measurement_date, kind: date}
+    endpoint_column: measurement_concept_id
+    endpoint_values: {}
+    value: value_as_number

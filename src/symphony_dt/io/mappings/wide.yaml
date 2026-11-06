@@ -1,0 +1,15 @@
+# One wide table: one row per visit, one column per score. Copy and rename columns to fit your data.
+name: wide
+description: One row per participant visit with score columns.
+participants:
+  table: wide
+  id: participant_id
+  cohort: {column: cohort}
+  age: age
+  sex: sex
+observations:
+  - {table: wide, id: participant_id, time: {column: days, unit: days}, endpoint: updrs3, value: updrs3}
+  - {table: wide, id: participant_id, time: {column: days, unit: days}, endpoint: moca, value: moca}
+  - {table: wide, id: participant_id, time: {column: days, unit: days}, endpoint: scopa_aut, value: scopa_aut}
+visits:
+  - {table: wide, id: participant_id, time: {column: days, unit: days}, exposures: {ledd: ledd}}

@@ -1,0 +1,21 @@
+# HL7 FHIR R4 Bundles. Codes are matched as "system#code". The entries below are PLACEHOLDERS: set
+# them to the codes your server uses (for example LOINC codes your terminology service confirms).
+name: fhir
+description: FHIR R4 Patient and Observation resources.
+participants:
+  table: patient
+  id: id
+  cohort: {column: cohort, default: unknown}
+  age: age_at_first
+  sex: gender
+  sex_values: {female: 0, male: 1}
+observations:
+  - table: observation
+    id: subject
+    time: {column: effective, kind: date}
+    endpoint_column: code
+    endpoint_values:
+      "urn:symphony-dt:placeholder#updrs3-total": updrs3
+      "urn:symphony-dt:placeholder#moca-total": moca
+      "urn:symphony-dt:placeholder#scopa-aut-total": scopa_aut
+    value: value

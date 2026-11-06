@@ -1,153 +1,101 @@
+"""Model configuration: the observation-model switches of pd_v2, named rather than written as literals."""
+
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, Literal
+from typing import Any, Literal
 
-import yaml
+from pydantic import BaseModel, ConfigDict, field_validator
 
+from symphony_dt import constants as C
+from symphony_dt.labels import validation
 
-@dataclass(frozen=True)
-class RunConfig:
-    project: str
-    seed: int
-    outputs_root: str
-    overwrite: bool = False
+__all__ = ["ModelConfig"]
 
 
-@dataclass(frozen=True)
-class IOConfig:
-    input_dir: str
-    cohort: Literal["PDLIKE", "ALLCOHORTS"]
-    baseline_filename_pdlike: str
-    clinic_filename_pdlike: str
-    baseline_filename_all: str
-    clinic_filename_all: str
-    omics_filename: str
+@validation("VALIDATED")
+class ModelConfig(BaseModel):
+    """The switches and grid settings of one pd_v2 arm.
 
+    `censored` gives each endpoint the tobit density (1) or the truncated density (0).
+    `state_dependent_sigma` is A01, `ledd_in_mu_U` is A02 and `sigma_xbar` is the A01 centring constant.
+    Use `ModelConfig.primary()` for the study's primary arm.
 
-@dataclass(frozen=True)
-class CohortConfig:
-    require_sex: bool = True
-    require_age_baseline_years: bool = True
-    pd_like_only: bool = True
+    Validation: VALIDATED. The switch values of `primary()` and `a01_sensitivity()` are the study's.
+    """
 
+    model_config = ConfigDict(frozen=True, extra="forbid")
 
-@dataclass(frozen=True)
-class DemoConfig:
-    enabled: bool = True
-    n_patients: int = 25
-    patient_id_strategy: Literal["sorted_first", "stable_hash", "clinical_best"] = "sorted_first"
-
-
-@dataclass(frozen=True)
-class CVConfig:
-    n_folds: int = 5
-
-
-@dataclass(frozen=True)
-class ShardingConfig:
-    method: Literal["hash", "stride"] = "hash"
-
-
-@dataclass(frozen=True)
-class LoggingConfig:
-    level: str = "INFO"
-
-
-@dataclass(frozen=True)
-class AppConfig:
-    run: RunConfig
-    io: IOConfig
-    cohort: CohortConfig
-    demo: DemoConfig
-    cv: CVConfig
-    sharding: ShardingConfig
-    logging: LoggingConfig
-
-
-def _require(d: Dict[str, Any], key: str, ctx: str) -> Any:
-    if key not in d:
-        raise ValueError(f"Missing required key '{key}' in {ctx}")
-    return d[key]
-
-
-def _as_int(x: Any, ctx: str) -> int:
-    if isinstance(x, bool):
-        raise ValueError(f"Invalid int (bool) in {ctx}")
-    try:
-        return int(x)
-    except Exception as e:  # noqa: BLE001
-        raise ValueError(f"Invalid int in {ctx}: {x!r}") from e
-
-
-def load_config(path: Path) -> AppConfig:
-    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if not isinstance(raw, dict):
-        raise ValueError("Config must be a YAML mapping at top level")
-
-    run_d = _require(raw, "run", "root")
-    io_d = _require(raw, "io", "root")
-    cohort_d = raw.get("cohort", {}) or {}
-    demo_d = raw.get("demo", {}) or {}
-    cv_d = raw.get("cv", {}) or {}
-    sh_d = raw.get("sharding", {}) or {}
-    log_d = raw.get("logging", {}) or {}
-
-    run = RunConfig(
-        project=str(_require(run_d, "project", "run")),
-        seed=_as_int(_require(run_d, "seed", "run"), "run.seed"),
-        outputs_root=str(_require(run_d, "outputs_root", "run")),
-        overwrite=bool(run_d.get("overwrite", False)),
+    censored: tuple[int, int, int] = (
+        C.CENSORED_PRIMARY["updrs3"],
+        C.CENSORED_PRIMARY["moca"],
+        C.CENSORED_PRIMARY["scopa_aut"],
     )
+    state_dependent_sigma: int = C.STATE_DEPENDENT_SIGMA_PRIMARY
+    ledd_in_mu_U: int = C.LEDD_IN_MU_U_PRIMARY
+    sigma_xbar: tuple[float, float, float] = C.SIGMA_XBAR_PRIMARY
+    prior: Literal["corrected", "published"] = "corrected"
+    h_max_years: float = C.H_MAX_YEARS
 
-    cohort = str(_require(io_d, "cohort", "io")).upper()
-    if cohort not in {"PDLIKE", "ALLCOHORTS"}:
-        raise ValueError("io.cohort must be one of: PDLIKE, ALLCOHORTS")
+    @field_validator("censored")
+    @classmethod
+    def _binary(cls, value: tuple[int, int, int]) -> tuple[int, int, int]:
+        if any(v not in (0, 1) for v in value):
+            raise ValueError(f"censored must hold 0 or 1 per endpoint, got {value}")
+        return value
 
-    io_cfg = IOConfig(
-        input_dir=str(_require(io_d, "input_dir", "io")),
-        cohort=cohort,  # type: ignore[assignment]
-        baseline_filename_pdlike=str(_require(io_d, "baseline_filename_pdlike", "io")),
-        clinic_filename_pdlike=str(_require(io_d, "clinic_filename_pdlike", "io")),
-        baseline_filename_all=str(_require(io_d, "baseline_filename_all", "io")),
-        clinic_filename_all=str(_require(io_d, "clinic_filename_all", "io")),
-        omics_filename=str(_require(io_d, "omics_filename", "io")),
-    )
+    @field_validator("state_dependent_sigma", "ledd_in_mu_U")
+    @classmethod
+    def _switch(cls, value: int) -> int:
+        if value not in (0, 1):
+            raise ValueError(f"a switch must be 0 or 1, got {value}")
+        return value
 
-    cohort_cfg = CohortConfig(
-        require_sex=bool(cohort_d.get("require_sex", True)),
-        require_age_baseline_years=bool(cohort_d.get("require_age_baseline_years", True)),
-        pd_like_only=bool(cohort_d.get("pd_like_only", True)),
-    )
+    @field_validator("sigma_xbar")
+    @classmethod
+    def _unit(cls, value: tuple[float, float, float]) -> tuple[float, float, float]:
+        if any(not 0.0 <= v <= 1.0 for v in value):
+            raise ValueError(f"sigma_xbar entries must lie in [0, 1], got {value}")
+        return value
 
-    demo_cfg = DemoConfig(
-        enabled=bool(demo_d.get("enabled", True)),
-        n_patients=_as_int(demo_d.get("n_patients", 25), "demo.n_patients"),
-        patient_id_strategy=str(demo_d.get("patient_id_strategy", "sorted_first")),
-    )
-    if demo_cfg.n_patients <= 0:
-        raise ValueError("demo.n_patients must be > 0")
-    if demo_cfg.patient_id_strategy not in {"sorted_first", "stable_hash", "clinical_best"}:
-        raise ValueError("demo.patient_id_strategy must be one of: sorted_first, stable_hash, clinical_best")
+    @field_validator("h_max_years")
+    @classmethod
+    def _positive(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError(f"h_max_years must be positive, got {value}")
+        return value
 
-    cv_cfg = CVConfig(n_folds=_as_int(cv_d.get("n_folds", 5), "cv.n_folds"))
-    if cv_cfg.n_folds < 2:
-        raise ValueError("cv.n_folds must be >= 2")
+    @classmethod
+    def primary(cls) -> ModelConfig:
+        """The study's primary arm: A01 off, A02 on, A03 on for MoCA only.
 
-    sharding_method = str(sh_d.get("method", "hash")).lower()
-    if sharding_method not in {"hash", "stride"}:
-        raise ValueError("sharding.method must be one of: hash, stride")
-    sharding_cfg = ShardingConfig(method=sharding_method)  # type: ignore[arg-type]
+        Validation: VALIDATED.
+        """
+        return cls()
 
-    logging_cfg = LoggingConfig(level=str(log_d.get("level", "INFO")).upper())
+    @classmethod
+    def a01_sensitivity(cls) -> ModelConfig:
+        """The study's pre-declared sensitivity arm: the primary arm with A01 switched on.
 
-    return AppConfig(
-        run=run,
-        io=io_cfg,
-        cohort=cohort_cfg,
-        demo=demo_cfg,
-        cv=cv_cfg,
-        sharding=sharding_cfg,
-        logging=logging_cfg,
-    )
+        Validation: VALIDATED.
+        """
+        return cls(state_dependent_sigma=C.STATE_DEPENDENT_SIGMA_SENSITIVITY)
+
+    def hyperparameters(self) -> dict[str, Any]:
+        """Return the prior hyperparameters this configuration selects.
+
+        Validation: VALIDATED.
+        """
+        hyper = C.PRIOR_CORRECTED if self.prior == "corrected" else C.PRIOR_PUBLISHED
+        return dict(hyper)
+
+    def switches(self) -> dict[str, Any]:
+        """Return the switch entries of the Stan data block.
+
+        Validation: VALIDATED.
+        """
+        return {
+            "censored": list(self.censored),
+            "state_dependent_sigma": int(self.state_dependent_sigma),
+            "ledd_in_mu_U": int(self.ledd_in_mu_U),
+            "sigma_xbar": [float(v) for v in self.sigma_xbar],
+        }
