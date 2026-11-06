@@ -220,6 +220,7 @@ def test_new_plots(tmp_path, cohort200):
         ).to_csv(p, index=False)
         files.append(str(p))
     assert plots.plot_trace(files, ["mu_r.1"]) is not None
+    assert plots.plot_trace(files, ["mu_r[1]"]) is not None
     assert plots.plot_rank(files, ["mu_r.1", "lp__"]) is not None
     assert plots.plot_energy(files) is not None
     plt.close("all")
