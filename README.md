@@ -65,6 +65,12 @@ print(forecast.interval(0.95).head())
 - The scoring code of record: interval coverage, CRPS, LOCF and mixed-model baselines, events, bootstrap.
 - Simulation-based calibration with explicit multiplicity control, and posterior predictive checks.
 - Run manifests, data fingerprints, pre-registration freezes, PROV provenance, model and data cards.
+- One study file runs everything, with eligibility rules and an attrition table, a data profile, tidy tables and
+  plots for every step.
+- A living twin (EXPERIMENTAL) that updates with each visit and monitors its own calibration with an anytime-valid
+  e-process. It recalibrates online, suggests the most informative next visit and relearns with lineage.
+- Runs anywhere: Slurm job arrays, Docker and Apptainer, portable run bundles, JSON Schemas and a JSON twin service.
+- An open synthetic benchmark against LOCF and a mixed model.
 
 Every public function carries a validation label: VALIDATED, TESTED or EXPERIMENTAL. See the
 [documentation](https://a7med7emedan.github.io/symphony-dt/).

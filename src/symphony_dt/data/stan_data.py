@@ -59,9 +59,7 @@ def h_max_in_days(h_max_years: float = C.H_MAX_YEARS) -> tuple[int, int]:
 
 
 @validation("VALIDATED")
-def substeps_days(
-    dt_days: NDArray[Any] | Sequence[float], h_max_years: float = C.H_MAX_YEARS
-) -> NDArray[np.int64]:
+def substeps_days(dt_days: NDArray[Any] | Sequence[float], h_max_years: float = C.H_MAX_YEARS) -> NDArray[np.int64]:
     """Return the number of equal sub-steps on each interval, from integer days (rule D39).
 
     Only an exact tie collapses: an interval of zero days takes zero steps. Every interval of one

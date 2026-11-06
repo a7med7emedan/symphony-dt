@@ -64,9 +64,7 @@ class ModelSpec:
                 continue
             digest = hashlib.sha256(Path(path).read_bytes()).hexdigest()
             if digest != expected:
-                raise ModelIntegrityError(
-                    f"{self.name}/{role} ({path.name}) has sha256 {digest}, expected {expected}"
-                )
+                raise ModelIntegrityError(f"{self.name}/{role} ({path.name}) has sha256 {digest}, expected {expected}")
 
     def program(self, role: str = "model") -> Path:
         """Return the Stan file for `role`, or raise KeyError naming the roles.
@@ -208,9 +206,7 @@ def cmdstan_version() -> str | None:
 
 
 @validation("TESTED")
-def compile_model(
-    name: str = "pd_v2", program: str = "model", *, force: bool = False, threads: bool = True
-) -> Any:
+def compile_model(name: str = "pd_v2", program: str = "model", *, force: bool = False, threads: bool = True) -> Any:
     """Compile a registered program into the cache and return a `cmdstanpy.CmdStanModel`.
 
     The Stan file is copied into a cache folder named by its digest, so a compiled executable is

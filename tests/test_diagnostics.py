@@ -85,19 +85,14 @@ def test_override_is_explicit_and_logged():
     assert rep.converged and rep.override["reason"] == "pilot run"
     assert rep.thresholds["c2_max_rhat"] == 1.05
     with pytest.warns(D.GateOverrideWarning):
-        assert (
-            D.retained_chains(lp(), override=D.GateOverride("r", "a", trap_multiple=2.0))["pre_declared"]
-            is False
-        )
+        assert D.retained_chains(lp(), override=D.GateOverride("r", "a", trap_multiple=2.0))["pre_declared"] is False
 
 
 def test_csv_helpers(tmp_path):
     files = []
     for c in (10, 2, 1):
         p = tmp_path / f"m-1_{c}.csv"
-        frame = pd.DataFrame(
-            {"lp__": np.arange(5.0), "divergent__": 0, "treedepth__": 3, "energy__": 1.0 + c}
-        )
+        frame = pd.DataFrame({"lp__": np.arange(5.0), "divergent__": 0, "treedepth__": 3, "energy__": 1.0 + c})
         p.write_text("# comment\n" + frame.to_csv(index=False))
         files.append(p)
     ordered = D.chain_csvs_in_order(files)

@@ -143,12 +143,7 @@ def test_cli_commands(tmp_path):
     assert (split / "targets_meta.csv").exists()
     meta = json.loads((sim / "manifest.json").read_text())
     assert meta["outputs"]["sha256"]
-    assert (
-        runner.invoke(
-            app, ["report", str(sim / "manifest.json"), "--out", str(tmp_path / "r.html")]
-        ).exit_code
-        == 0
-    )
+    assert runner.invoke(app, ["report", str(sim / "manifest.json"), "--out", str(tmp_path / "r.html")]).exit_code == 0
     assert runner.invoke(app, ["reproduce", str(sim / "manifest.json")]).exit_code == 0
     gq = tmp_path / "gq.csv"
     import pandas as pd
@@ -160,9 +155,7 @@ def test_cli_commands(tmp_path):
     gq.write_text("\n".join(rows) + "\n")
     res = runner.invoke(app, ["evaluate", str(split), str(gq), "--out", str(tmp_path / "scores")])
     assert res.exit_code == 0, res.output
-    assert (tmp_path / "scores" / "scores.json").exists() and (
-        tmp_path / "scores" / "frozen_spec.json"
-    ).exists()
+    assert (tmp_path / "scores" / "scores.json").exists() and (tmp_path / "scores" / "frozen_spec.json").exists()
 
 
 def test_cli_check_runs():

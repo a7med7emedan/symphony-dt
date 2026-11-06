@@ -182,9 +182,7 @@ def from_fhir(
 
 
 @validation("TESTED")
-def from_sdtm(
-    qs: Any, dm: Any, mapping: DatasetMapping | str | Path = "sdtm", ex: Any | None = None
-) -> TwinDataset:
+def from_sdtm(qs: Any, dm: Any, mapping: DatasetMapping | str | Path = "sdtm", ex: Any | None = None) -> TwinDataset:
     """Build a dataset from CDISC SDTM domains: QS (questionnaires) and DM (demographics).
 
     Time is the study day `QSDY`. Test codes are matched on `QSTESTCD`; the shipped values are examples

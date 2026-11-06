@@ -63,9 +63,7 @@ def html_report(
     parts += [f"<p>{html.escape(n)}</p>" for n in notes]
     if gates is not None:
         verdict = bool(gates.get("converged"))
-        parts.append(
-            f"<h2>Convergence gates</h2><p class='{'pass' if verdict else 'fail'}'>CONVERGED {verdict}</p>"
-        )
+        parts.append(f"<h2>Convergence gates</h2><p class='{'pass' if verdict else 'fail'}'>CONVERGED {verdict}</p>")
         parts.append(_table({k: v for k, v in gates.items() if k not in ("diagnostics", "chain_exclusion")}))
     if scores is not None:
         parts.append("<h2>Scores</h2>")
@@ -86,8 +84,7 @@ def html_report(
         )
     for caption, fig in figures:
         parts.append(
-            f"<figure>{figure_to_html(fig, alt=caption)}<figcaption>{html.escape(caption)}"
-            "</figcaption></figure>"
+            f"<figure>{figure_to_html(fig, alt=caption)}<figcaption>{html.escape(caption)}</figcaption></figure>"
         )
     for i, m in enumerate(manifests, start=1):
         parts.append(f"<h2>Run manifest {i}: {html.escape(str(m.get('kind', '')))}</h2>")

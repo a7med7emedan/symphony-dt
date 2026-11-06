@@ -112,7 +112,5 @@ def test_html_report(tmp_path):
         figures=[("a figure", fig)],
         notes=["note"],
     )
-    assert (
-        "CONVERGED False" in page and "data:image/png;base64" in page and "Developed by Ahmed Hemedan" in page
-    )
+    assert "CONVERGED False" in page and "data:image/png;base64" in page and "Developed by Ahmed Hemedan" in page
     assert write_html_report(tmp_path / "r.html", [], title="t").exists()

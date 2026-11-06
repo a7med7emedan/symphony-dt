@@ -111,9 +111,7 @@ def mark(theme: str = "light", *, simple: bool = False) -> str:
 def app_icon(theme: str = "light") -> str:
     dark = theme == "dark"
     bg = NIGHT if dark else PAPER
-    inner = tulip(
-        navy=NAVY_ON_DARK if dark else NAVY, outline="#6E7A93" if dark else SLATE, uid=f"icon-{theme}"
-    )
+    inner = tulip(navy=NAVY_ON_DARK if dark else NAVY, outline="#6E7A93" if dark else SLATE, uid=f"icon-{theme}")
     body = (
         f'<rect width="128" height="128" rx="28" fill="{bg}"/>'
         f'<g transform="translate(14.08 14.08) scale(0.78)">{inner}</g>'
@@ -124,9 +122,7 @@ def app_icon(theme: str = "light") -> str:
 def wordmark(theme: str = "light") -> str:
     dark = theme == "dark"
     ink, muted = (INK_ON_DARK, MUTED_ON_DARK) if dark else (INK, MUTED)
-    inner = tulip(
-        navy=NAVY_ON_DARK if dark else NAVY, outline="#6E7A93" if dark else SLATE, uid=f"wm-{theme}"
-    )
+    inner = tulip(navy=NAVY_ON_DARK if dark else NAVY, outline="#6E7A93" if dark else SLATE, uid=f"wm-{theme}")
     body = (
         f'<g transform="translate(0 8) scale(1.0)">{inner}</g>'
         f'<text x="150" y="78" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="58" '

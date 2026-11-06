@@ -30,9 +30,7 @@ def model_card_markdown(name: str = "pd_v2") -> str:
 
 
 @validation("TESTED")
-def data_card_markdown(
-    dataset: TwinDataset, *, title: str = "Data card", min_cell: int = 10, source: str = ""
-) -> str:
+def data_card_markdown(dataset: TwinDataset, *, title: str = "Data card", min_cell: int = 10, source: str = "") -> str:
     """Return a data card: aggregate counts, envelope warnings and the dataset fingerprint.
 
     Any count of participants below `min_cell` is shown as `<min_cell`.
@@ -45,8 +43,7 @@ def data_card_markdown(
     if source:
         lines += [f"**Source.** {source}", ""]
     lines += [
-        f"**Fingerprint.** `{dataset.fingerprint()}` (sha256 of the canonical dataset; the data are "
-        "not included).",
+        f"**Fingerprint.** `{dataset.fingerprint()}` (sha256 of the canonical dataset; the data are not included).",
         "",
         "## Counts",
         "",
@@ -74,8 +71,7 @@ def data_card_markdown(
     ]
     for inst in dataset.instruments:
         lines.append(
-            f"| {inst.name} | {inst.version} | {inst.lower:g} to {inst.upper:g} | "
-            f"{inst.worsening} | {inst.boundary} |"
+            f"| {inst.name} | {inst.version} | {inst.lower:g} to {inst.upper:g} | {inst.worsening} | {inst.boundary} |"
         )
     lines += ["", "## Validity envelope (pd_v2)", ""]
     if env.inside:

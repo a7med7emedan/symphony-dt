@@ -49,9 +49,7 @@ def test_gates_report_short_chains_honestly(fitted):
     assert report.chain_exclusion["n_chains"] == 4
     assert report.converged == (report.meets_c2 and report.meets_c3 and report.meets_min_retained)
     with pytest.warns(GateOverrideWarning):
-        loose = fitted[2].gates(
-            override=GateOverride("smoke test", "CI", c2_max_rhat=10.0, c3_min_ess_bulk=1.0)
-        )
+        loose = fitted[2].gates(override=GateOverride("smoke test", "CI", c2_max_rhat=10.0, c3_min_ess_bulk=1.0))
     assert loose.override is not None
 
 
@@ -137,3 +135,35 @@ def test_cli_fit_gates_and_ppc(tmp_path):
     assert res.exit_code == 0, res.output
     assert (tmp_path / "ppc" / "ppc_summary.json").exists()
     assert runner.invoke(app, ["check", "--compile"]).exit_code == 0
+
+
+def test_full_study_run(tmp_path):
+    from symphony_dt.study import StudyConfig, run_study
+
+    cfg = StudyConfig(
+        output_dir=str(tmp_path / "study"),
+        data={"simulate_n": 40},
+        sampler={"chains": 4, "warmup": 100, "draws": 100},
+        split={"test_fraction": 0.25, "anchor_years": 2.0},
+        gate_override={
+            "reason": "short smoke-test chains",
+            "author": "CI",
+            "c2_max_rhat": 10.0,
+            "c3_min_ess_bulk": 1.0,
+        },
+        outputs={"tables": ["csv"], "figures": ["png"]},
+    )
+    result = run_study(cfg)
+    assert set(result.summary().values()) == {"ran"}
+    root = tmp_path / "study"
+    for path in (
+        "05_fit/run/fit_manifest.json",
+        "06_gates/gates.json",
+        "06_gates/posterior_summary.csv",
+        "07_forecast/forecasts.csv",
+        "08_evaluate/scores.csv",
+        "09_report/report.html",
+    ):
+        assert (root / path).exists(), path
+    again = run_study(cfg)
+    assert set(again.summary().values()) == {"skipped (complete)"}

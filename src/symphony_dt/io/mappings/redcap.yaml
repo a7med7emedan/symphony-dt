@@ -1,0 +1,17 @@
+# REDCap flat export (one row per record and event). Field names below are EXAMPLES: replace them with your
+# project's variable names. The visit date is read as a date and re-expressed as days since the first visit.
+name: redcap
+description: REDCap flat export with one row per record and event.
+participants:
+  table: redcap
+  id: record_id
+  cohort: {column: dx_group, values: {"1": PD, "2": Prodromal}}
+  age: age_at_baseline
+  sex: sex
+  sex_values: {"0": 0, "1": 1}
+observations:
+  - {table: redcap, id: record_id, time: {column: visit_date, kind: date}, endpoint: updrs3, value: mds_updrs_part3_total}
+  - {table: redcap, id: record_id, time: {column: visit_date, kind: date}, endpoint: moca, value: moca_total}
+  - {table: redcap, id: record_id, time: {column: visit_date, kind: date}, endpoint: scopa_aut, value: scopa_aut_total}
+visits:
+  - {table: redcap, id: record_id, time: {column: visit_date, kind: date}, exposures: {ledd: ledd_total}}

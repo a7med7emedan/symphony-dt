@@ -87,8 +87,7 @@ class GateOverride:
         if not self.reason.strip() or not self.author.strip():
             raise GateError("a GateOverride needs a reason and an author")
         if all(
-            v is None
-            for v in (self.c2_max_rhat, self.c3_min_ess_bulk, self.min_retained_chains, self.trap_multiple)
+            v is None for v in (self.c2_max_rhat, self.c3_min_ess_bulk, self.min_retained_chains, self.trap_multiple)
         ):
             raise GateError("a GateOverride must change at least one threshold")
 
@@ -215,9 +214,7 @@ def summary_on_chains(csv_files: Sequence[str | Path], keep: Sequence[int] | Non
     binary = cmdstan_path() / "bin" / "stansummary"
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "summary.csv"
-        subprocess.run(
-            [str(binary), "-s", "9", "-c", str(out), *selected], check=True, capture_output=True, text=True
-        )
+        subprocess.run([str(binary), "-s", "9", "-c", str(out), *selected], check=True, capture_output=True, text=True)
         frame = pd.read_csv(out, index_col=0, comment="#")
     frame.index = [str(i).strip('"') for i in frame.index]
     return frame

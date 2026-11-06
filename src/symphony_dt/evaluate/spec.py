@@ -176,9 +176,7 @@ def load_frozen_spec(path: str | Path) -> tuple[ScoringSpec, FrozenSpec]:
     data["events"] = {int(k): tuple(v) for k, v in data["events"].items()}
     data["endpoints"] = {int(k): v for k, v in data["endpoints"].items()}
     spec = ScoringSpec(**data)
-    frozen = FrozenSpec(
-        sha256=payload["sha256"], frozen_at=payload["frozen_at"], name=payload["name"], path=str(path)
-    )
+    frozen = FrozenSpec(sha256=payload["sha256"], frozen_at=payload["frozen_at"], name=payload["name"], path=str(path))
     if spec.sha256() != frozen.sha256:
         raise UnfrozenSpecificationError(f"{path}: the stored specification does not match its hash")
     return spec, frozen
@@ -196,9 +194,7 @@ def require_frozen(
     Validation: TESTED.
     """
     if frozen is None:
-        raise UnfrozenSpecificationError(
-            "scoring needs a frozen specification; call freeze_spec(spec) before scoring"
-        )
+        raise UnfrozenSpecificationError("scoring needs a frozen specification; call freeze_spec(spec) before scoring")
     current = spec.sha256()
     if current != frozen.sha256:
         if deviation is None:

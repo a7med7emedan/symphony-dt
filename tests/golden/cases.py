@@ -58,9 +58,7 @@ def write_stan_data_inputs(root: Path, ds, folds: pd.DataFrame, std: Standardisa
     )
     base = ds.participants.copy()
     base["patno"] = base["participant_id"].astype(int)
-    base[["patno", "age_baseline_years", "sex", "genotype_assay_available"]].to_csv(
-        pre / "baseline.csv", index=False
-    )
+    base[["patno", "age_baseline_years", "sex", "genotype_assay_available"]].to_csv(pre / "baseline.csv", index=False)
     om = ds.marker_matrix(PATHWAY).reset_index().rename(columns={"participant_id": "patno"})
     om["patno"] = om["patno"].astype(int)
     om.to_csv(pre / "omics.csv", index=False)

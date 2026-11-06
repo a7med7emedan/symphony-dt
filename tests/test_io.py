@@ -90,9 +90,7 @@ def test_mappings_load_and_validate(tmp_path):
     with pytest.raises(MappingError, match="malformed"):
         load_mapping({"name": "x"})
     path = tmp_path / "m.yaml"
-    path.write_text(
-        (__import__("importlib").resources.files("symphony_dt.io") / "mappings" / "wide.yaml").read_text()
-    )
+    path.write_text((__import__("importlib").resources.files("symphony_dt.io") / "mappings" / "wide.yaml").read_text())
     assert load_mapping(path).name == "wide"
 
 
@@ -144,9 +142,7 @@ def test_ppmi_layout_adapter(tmp_path):
 
 
 def test_omop_adapter():
-    person = pd.DataFrame(
-        {"person_id": [1, 2], "year_of_birth": [1950, 1960], "gender_concept_id": [8507, 8532]}
-    )
+    person = pd.DataFrame({"person_id": [1, 2], "year_of_birth": [1950, 1960], "gender_concept_id": [8507, 8532]})
     meas = pd.DataFrame(
         {
             "person_id": [1, 1, 2],
@@ -234,9 +230,7 @@ def test_posterior_round_trip(tmp_path):
     import arviz as az
 
     mu = {"mu": np.random.default_rng(0).normal(size=(2, 50))}
-    if int(az.__version__.split(".")[0]) >= 1:
-        idata = az.from_dict({"posterior": mu})
-    else:  # ArviZ 0.x
-        idata = az.from_dict(posterior=mu)
+    new_api = int(az.__version__.split(".")[0]) >= 1  # ArviZ 0.x takes posterior= as a keyword
+    idata = az.from_dict({"posterior": mu}) if new_api else az.from_dict(posterior=mu)
     path = write_posterior(idata, tmp_path / "p.nc")
     assert read_posterior(path)["posterior"]["mu"].shape == (2, 50)

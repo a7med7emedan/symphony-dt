@@ -103,9 +103,7 @@ def visit_patterns(dataset: TwinDataset) -> list[VisitPattern]:
 
 
 @validation("VALIDATED")
-def draw_prior(
-    rng: np.random.Generator, n_pathway: int, hyper: Mapping[str, Any] | None = None
-) -> dict[str, Any]:
+def draw_prior(rng: np.random.Generator, n_pathway: int, hyper: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Draw the global parameters from the pd_v2 prior.
 
     Half-normals are drawn as the absolute value of a normal, which is what the lower-bound

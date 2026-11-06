@@ -569,15 +569,13 @@ def pool_folds(
             )
 
     df["sex_label"] = df["sex"].map({0: "Female", 1: "Male"}).fillna("unknown")
-    df["age_band"] = pd.cut(
-        df["age"], [-np.inf, 60, 70, np.inf], right=False, labels=["<60", "60-69", ">=70"]
-    ).astype(str)
-    df["visits_band"] = pd.cut(
-        df["visits_pre"], [0, 3, 5, np.inf], right=False, labels=["0-2", "3-4", ">=5"]
-    ).astype(str)
-    df["followup"] = np.where(
-        df["last_h"] <= 2.0, "last visit <=2y after anchor", "followed >2y after anchor"
+    df["age_band"] = pd.cut(df["age"], [-np.inf, 60, 70, np.inf], right=False, labels=["<60", "60-69", ">=70"]).astype(
+        str
     )
+    df["visits_band"] = pd.cut(df["visits_pre"], [0, 3, 5, np.inf], right=False, labels=["0-2", "3-4", ">=5"]).astype(
+        str
+    )
+    df["followup"] = np.where(df["last_h"] <= 2.0, "last visit <=2y after anchor", "followed >2y after anchor")
     for k, name in names.items():
         sk = df[df["k"] == k]
         for col in ("sex_label", "cohort", "age_band", "visits_band", "followup"):

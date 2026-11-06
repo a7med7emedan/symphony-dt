@@ -92,9 +92,7 @@ class EnvelopeReport:
 
 
 @validation("TESTED")
-def check_envelope(
-    dataset: TwinDataset, model: str = "pd_v2", limits: dict[str, Any] | None = None
-) -> EnvelopeReport:
+def check_envelope(dataset: TwinDataset, model: str = "pd_v2", limits: dict[str, Any] | None = None) -> EnvelopeReport:
     """Check that `dataset` lies inside the design envelope of `model`.
 
     `limits` overrides entries of `PD_V2_ENVELOPE` for a stricter or looser check.

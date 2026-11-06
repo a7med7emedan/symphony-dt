@@ -84,9 +84,7 @@ def polyline(points: list[tuple[float, float]], colour: str, width: float = 2.4,
     )
 
 
-def band(
-    upper: list[tuple[float, float]], lower: list[tuple[float, float]], colour: str, opacity: float
-) -> str:
+def band(upper: list[tuple[float, float]], lower: list[tuple[float, float]], colour: str, opacity: float) -> str:
     pts = upper + lower[::-1]
     d = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in pts) + "Z"
     return f'<path d="{d}" fill="{colour}" fill-opacity="{opacity}"/>'
@@ -144,9 +142,7 @@ def twin_concept() -> str:
             fill=MUTED,
         )
     )
-    for i, (lab, name, col) in enumerate(
-        (("M", "motor", M_COL), ("C", "cognitive", C_COL), ("N", "autonomic", N_COL))
-    ):
+    for i, (lab, name, col) in enumerate((("M", "motor", M_COL), ("C", "cognitive", C_COL), ("N", "autonomic", N_COL))):
         x = 1100 + i * 132
         p.append(badge(x, 52, lab, col, 12))
         p.append(t(x + 20, 57, name, 16))
@@ -182,12 +178,8 @@ def twin_concept() -> str:
         pts = [(190 + tt * 125, base - v * 55) for tt, v in zip(times, ys, strict=True)]
         p.append(polyline(pts, col, 1.6))
         for x, y in pts:
-            p.append(
-                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.2" fill="#FFFFFF" stroke="{col}" stroke-width="2.2"/>'
-            )
-    p.append(
-        f'<line x1="440" y1="250" x2="440" y2="470" stroke="{INK}" stroke-width="1.4" stroke-dasharray="4 4"/>'
-    )
+            p.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.2" fill="#FFFFFF" stroke="{col}" stroke-width="2.2"/>')
+    p.append(f'<line x1="440" y1="250" x2="440" y2="470" stroke="{INK}" stroke-width="1.4" stroke-dasharray="4 4"/>')
     p.append(t(440, 488, "today", 13, fill=MUTED, anchor="middle"))
     p.append(t(64, 520, "three scores, sometimes missing; dose (LEDD),", 14.5, fill=MUTED))
     p.append(t(64, 542, "age, sex and optional pathway markers", 14.5, fill=MUTED))
@@ -236,12 +228,9 @@ def twin_concept() -> str:
         p.append(f'<circle cx="{xx:.1f}" cy="{yy:.1f}" r="4" fill="{INK}"/>')
     for xx, dy in ((ax + 90, -6), (ax + 180, 12), (ax + 255, -14)):
         yy = hist[-1][1] - 0.22 * (xx - ax) + dy
-        p.append(
-            f'<circle cx="{xx:.1f}" cy="{yy:.1f}" r="4.4" fill="#FFFFFF" stroke="{RED}" stroke-width="2.2"/>'
-        )
+        p.append(f'<circle cx="{xx:.1f}" cy="{yy:.1f}" r="4.4" fill="#FFFFFF" stroke="{RED}" stroke-width="2.2"/>')
     p.append(
-        f'<line x1="{ax}" y1="230" x2="{ax}" y2="{yb + 10}" stroke="{INK}" stroke-width="1.4" '
-        'stroke-dasharray="4 4"/>'
+        f'<line x1="{ax}" y1="230" x2="{ax}" y2="{yb + 10}" stroke="{INK}" stroke-width="1.4" stroke-dasharray="4 4"/>'
     )
     p.append(t(ax - 6, 246, "anchor", 13, fill=MUTED, anchor="end"))
     p.append(t(1050, 228, "50% and 95% intervals from posterior draws", 14.5, fill=MUTED))
@@ -306,9 +295,7 @@ def method_overview() -> str:
             fill=MUTED,
         )
     )
-    for k, (lab, name, col) in enumerate(
-        (("M", "motor", M_COL), ("C", "cognitive", C_COL), ("N", "autonomic", N_COL))
-    ):
+    for k, (lab, name, col) in enumerate((("M", "motor", M_COL), ("C", "cognitive", C_COL), ("N", "autonomic", N_COL))):
         x = 1480 + k * 170
         p.append(badge(x, 64, lab, col, 14))
         p.append(t(x + 24, 70, name, 19))
@@ -389,9 +376,7 @@ def method_overview() -> str:
             f"{i('A z')}{sub(i('i'))} + σ{sub(i('r'))} ⊙ {i('b')}{sub(i('i'))}",
         )
     )
-    p.append(
-        math_line(x + 16, 338, f"{i('b')}{sub(i('i'))}, {i('s')}{sub(i('i'))}(0) ~ N(0, {i('I')}{sub('3')})")
-    )
+    p.append(math_line(x + 16, 338, f"{i('b')}{sub(i('i'))}, {i('s')}{sub(i('i'))}(0) ~ N(0, {i('I')}{sub('3')})"))
     p.append(arrow(x + 217, 362, x + 217, 380))
     p.append(box(x, 384, 434, 300))
     p.append(t(x + 16, 412, "Latent dynamics between visits", 17, weight=700))
@@ -403,9 +388,7 @@ def method_overview() -> str:
         f'{i("x")} = logit<tspan dy="-7" font-size="12">−1</tspan><tspan dy="7"> </tspan>({i("s")})</text>'
     )
     p.append(math_line(x + 16, 478, f"{i('s')}({i('t')} + {i('h')}) = {i('s')}({i('t')})"))
-    p.append(
-        math_line(x + 46, 506, f"+ {i('h')} · softplus({i('r')}{sub(i('i'))} + {i('C x')}({i('t')})) ⊙ ξ")
-    )
+    p.append(math_line(x + 46, 506, f"+ {i('h')} · softplus({i('r')}{sub(i('i'))} + {i('C x')}({i('t')})) ⊙ ξ"))
     p.append(math_line(x + 16, 538, f"ξ = exp(−½{i('h')}σ{sub('ξ')}² + √{i('h')} σ{sub('ξ')} ⊙ ε)"))
     p.append(box(x + 14, 556, 190, 116, fill="#F8F9FC"))
     p.append(coupling(x + 109, 610, 0.9))
@@ -498,9 +481,7 @@ def method_overview() -> str:
         for j, s in enumerate(lines):
             p.append(t(x + 50, y + j * 23, s, 15.5))
     p.append(f'<line x1="{x + 16}" y1="490" x2="{x + 278}" y2="490" stroke="{LINE}"/>')
-    for j, s in enumerate(
-        ("a chain is excluded when its", "mean lp__ is more than 5 sd", "below the best chain")
-    ):
+    for j, s in enumerate(("a chain is excluded when its", "mean lp__ is more than 5 sd", "below the best chain")):
         p.append(t(x + 16, 516 + j * 23, s, 14.5, fill=MUTED))
     p.append(box(x, 612, 294, 186))
     p.append(t(x + 16, 640, "Reported beside", 17, weight=700))
@@ -587,9 +568,7 @@ def method_overview() -> str:
                 family="SF Mono, Menlo, Consolas, monospace" if mono else FONT,
             )
         )
-        p.append(
-            t(x + 16, 1206, s, 15, fill=MUTED, family="SF Mono, Menlo, Consolas, monospace" if mono else FONT)
-        )
+        p.append(t(x + 16, 1206, s, 15, fill=MUTED, family="SF Mono, Menlo, Consolas, monospace" if mono else FONT))
         if k < len(steps) - 1:
             p.append(arrow(x + w + 4, 1186, x + w + 24, 1186))
         x += w + 28

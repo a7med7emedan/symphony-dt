@@ -103,3 +103,24 @@ Brand: Ahmed asked to restore the v1 twin tulip and the method figure. tools/mak
 PR #9 (brand branch) open, version 2.0.1.dev0 on main after merge.
 Human steps: upload docs/assets/brand/social-preview.png in repo settings; Zenodo integration for a DOI.
 2.0.1 requested by Ahmed: release the tulip brand and figures so PyPI and `symphony-dt about` show them.
+
+## Release 2.1 (branch v2.1-modeller): IN PROGRESS
+Plan: docs/roadmap.md (sections 1 to 8). Ahmed asked for: modeller inputs/outputs/plots/control, formats,
+eligibility; a mature interacting self-learning twin; interoperability on any machine; real algorithmic novelty;
+whatever makes it the best tool in the domain. Order of work:
+1 eligibility (src/symphony_dt/data/eligibility.py written) 2 formats + profile 3 study.yaml runner
+4 outputs + plots 5 ParticipantTwin (SIR update, VoI next visit, milestones, uncertainty split, audit log) +
+TwinMonitor (e-process on PIT, adaptive conformal, relearn policy) 6 compute (bundle, Slurm, Apptainer, Docker,
+JSON Schemas, JSON stdio twin interface) 7 benchmark scenarios 8 tests, docs, CI, PR under Ahmed (no bots).
+All new features EXPERIMENTAL or TESTED; novelty claims hedged; prior SYMPHONY preprint credited.
+Done on v2.1-modeller (uncommitted at time of writing): eligibility.py, io formats + read_query + meds.py +
+redcap.yaml, data/profile.py, plots (save_figure, profile, attrition, trace, rank, energy, cohort trajectories,
+ppc intervals, coverage calibration, reliability, participant report), outputs.py, study.py (dry run verified,
+stage skipping verified). Next: src/symphony_dt/twin/ (core, lifecycle, monitor, registry), then compute, bench.
+Twin core finding (2026-11-06): SIR + Liu-West collapses when an instrument is very precise (MoCA sigma_obs
+~0.3): tempering hits its cap, rate spread collapses, long-horizon coverage 0.2-0.4 in the oracle benchmark.
+Rewriting the core as a tempered SMC sampler with pCN moves on the non-centred latent vector (s0, b_raw, eps),
+which is exactly N(0, I) a priori; MH acceptance uses the full-history likelihood ratio (Del Moral et al. 2006).
+SMC-pCN twin core DONE: oracle benchmark (n=100, 35 test, 5 scenarios, 500 particles, 14 s): twin 95% coverage
+0.92-0.99, 50% 0.40-0.74; best or tied CRPS in most cells; largest gains on sparse and dropout. Next: CLI, tests
+(monitor false-alarm rate, ACI coverage, twin calibration), docs pages, commit, PR under Ahmed.

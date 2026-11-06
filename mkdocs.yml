@@ -70,6 +70,9 @@ nav:
       - Simulation-based calibration: concepts/sbc.md
       - Governance: concepts/governance.md
   - User guide:
+      - The modeller's workflow: guide/workflow.md
+      - The living twin: guide/twin.md
+      - Running on any machine: guide/compute.md
       - Data: guide/data.md
       - Input and output: guide/io.md
       - Models: guide/models.md
@@ -95,7 +98,11 @@ nav:
       - symphony_dt.evaluate: api/evaluate.md
       - symphony_dt.calibration: api/calibration.md
       - symphony_dt.governance: api/governance.md
+      - symphony_dt.twin: api/twin.md
+      - Study, outputs, compute, bench: api/workflow.md
       - Reports, plots and CLI: api/other.md
+  - Benchmark: benchmark.md
+  - Roadmap: roadmap.md
   - Validation status: validation-status.md
   - Model card: model-card.md
   - Governance and data access: governance.md

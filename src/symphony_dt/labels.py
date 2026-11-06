@@ -79,6 +79,11 @@ def validation_status() -> dict[str, str]:
         "symphony_dt.report",
         "symphony_dt.plots",
         "symphony_dt._about",
+        "symphony_dt.outputs",
+        "symphony_dt.study",
+        "symphony_dt.twin",
+        "symphony_dt.compute",
+        "symphony_dt.bench",
     ):
         importlib.import_module(module)
     return {name: label.value for name, label in sorted(_REGISTRY.items())}
