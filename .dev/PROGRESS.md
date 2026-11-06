@@ -124,3 +124,9 @@ which is exactly N(0, I) a priori; MH acceptance uses the full-history likelihoo
 SMC-pCN twin core DONE: oracle benchmark (n=100, 35 test, 5 scenarios, 500 particles, 14 s): twin 95% coverage
 0.92-0.99, 50% 0.40-0.74; best or tied CRPS in most cells; largest gains on sparse and dropout. Next: CLI, tests
 (monitor false-alarm rate, ACI coverage, twin calibration), docs pages, commit, PR under Ahmed.
+2.1 committed a40c787 on v2.1-modeller; PR #12 opened by Ahmed. Version 2.1.0.dev0 (no release yet).
+Local: ruff, mypy (52 files), 124 fast tests, 93% coverage, golden exact, docs strict, prose 0, privacy 0.
+Next: merge #12 when CI green; slow suite incl. full study run; ask Ahmed before releasing 2.1.0.
+PR #12 merged by Ahmed (ff798fd). Slow suite then found a real bug: trace/rank plots received Stan names
+(sigma_xi[3]) but CSV columns are sigma_xi.3. Fixed in plots._csv_name; the full-study slow test now expects the
+logged GateOverrideWarning. Slow suite 7/7 PASS (full study run included).

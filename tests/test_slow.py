@@ -153,7 +153,8 @@ def test_full_study_run(tmp_path):
         },
         outputs={"tables": ["csv"], "figures": ["png"]},
     )
-    result = run_study(cfg)
+    with pytest.warns(GateOverrideWarning, match="short smoke-test chains"):
+        result = run_study(cfg)
     assert set(result.summary().values()) == {"ran"}
     root = tmp_path / "study"
     for path in (

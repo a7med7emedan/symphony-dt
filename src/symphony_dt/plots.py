@@ -365,7 +365,13 @@ def plot_attrition(result: Any, *, min_cell: int = 10, ax: Any = None) -> Any:
     return ax
 
 
+def _csv_name(name: str) -> str:
+    """Translate a Stan name such as `Gamma[1,2]` into CmdStan's CSV column `Gamma.1.2`."""
+    return name.replace("[", ".").replace(",", ".").replace("]", "").replace(" ", "")
+
+
 def _chain_matrix(csv_files: Sequence[str], name: str) -> NDArray[np.float64]:
+    name = _csv_name(name)
     frames = [pd.read_csv(p, comment="#", usecols=[name]) for p in csv_files]
     return np.column_stack([f[name].to_numpy(float) for f in frames])
 
