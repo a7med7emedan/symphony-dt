@@ -72,6 +72,22 @@ def test_resume_reuses_complete_chains(fitted):
     assert loaded.csv_files == result.csv_files
 
 
+def test_split_chains_equal_a_joint_run(tmp_path):
+    """One chain per call, as in a Slurm array, gives labelled files and the same draws as one joint run."""
+    stan_data = simulate_cohort(12, seed=3).stan_data
+    kwargs = {"iter_warmup": 30, "iter_sampling": 20, "seed": 9}
+    joint = fit(stan_data, chains=2, output_dir=tmp_path / "joint", **kwargs)
+    first = fit(stan_data, chain_ids=[2], output_dir=tmp_path / "split", resume=True, **kwargs)
+    assert first.csv_files[0].endswith("_2.csv")
+    second = fit(stan_data, chain_ids=[1], output_dir=tmp_path / "split", resume=True, **kwargs)
+    assert second.csv_files[0].endswith("_1.csv")
+    split = load_fit(tmp_path / "split")
+    assert [f.rsplit("_", 1)[1] for f in split.csv_files] == ["1.csv", "2.csv"]
+    np.testing.assert_array_equal(split.draws("lp__"), joint.draws("lp__"))
+    report = split.gates()
+    assert report.chain_exclusion["n_chains"] == 2
+
+
 def test_inference_data(fitted):
     idata = fitted[2].to_inference_data()
     assert "mu_r" in idata.posterior and "eps" not in idata.posterior

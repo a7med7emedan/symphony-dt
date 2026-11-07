@@ -21,7 +21,7 @@ import pandas as pd
 from symphony_dt import constants as C
 from symphony_dt.data.simulate import initial_values
 from symphony_dt.data.stan_data import StanData
-from symphony_dt.diagnostics import GateOverride, GateReport, assess, chain_csvs_in_order
+from symphony_dt.diagnostics import GateOverride, GateReport, assess, chain_csvs_in_order, chain_id
 from symphony_dt.labels import validation
 
 __all__ = ["FitResult", "chain_is_complete", "fit", "load_fit"]
@@ -129,8 +129,8 @@ def _chains_by_id(folder: Path) -> dict[int, Path]:
         if path.name.startswith("STALE_"):
             continue
         try:
-            cid = int(path.stem.rsplit("_", 1)[1])
-        except (IndexError, ValueError):
+            cid = chain_id(path)
+        except ValueError:
             continue
         found[cid] = path
     return found
@@ -231,7 +231,12 @@ def fit(
             show_progress=show_progress,
             show_console=False,
         )
-        csv_files.extend(str(f) for f in run.runset.csv_files)
+        # cmdstanpy names a one-chain file without its chain id; add it so every chain file carries one.
+        for cid, name in zip(missing, run.runset.csv_files, strict=True):
+            path = Path(name)
+            if not path.stem.endswith(f"_{cid}"):
+                path = path.rename(path.with_name(f"{path.stem}_{cid}{path.suffix}"))
+            csv_files.append(str(path))
     reused = sorted(complete)
     csv_files = chain_csvs_in_order(csv_files)
     result = FitResult(csv_files=csv_files, output_dir=out, settings=settings, stan_data_path=data_path)

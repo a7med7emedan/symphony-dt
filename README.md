@@ -39,7 +39,7 @@ Or use the container image, with CmdStan installed and pd_v2 already compiled, f
 Apple silicon:
 
 ```bash
-docker run --rm -v "$PWD":/work ghcr.io/a7med7emedan/symphony-dt:2.1.0 check
+docker run --rm -v "$PWD":/work ghcr.io/a7med7emedan/symphony-dt:2.1.1 check
 ```
 
 ## A ten-line example

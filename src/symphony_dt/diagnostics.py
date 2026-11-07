@@ -12,6 +12,7 @@ reason and an author; the override is written into the report, the manifest and 
 
 from __future__ import annotations
 
+import re
 import subprocess
 import tempfile
 import warnings
@@ -38,6 +39,7 @@ __all__ = [
     "GateReport",
     "assess",
     "chain_csvs_in_order",
+    "chain_id",
     "e_bfmi",
     "is_global",
     "read_sampler_columns",
@@ -189,13 +191,39 @@ def retained_chains(lp: ArrayLike, *, override: GateOverride | None = None) -> d
     }
 
 
+_HEADER_ID = re.compile(r"#\s*id\s*=\s*(\d+)")
+
+
+@validation("TESTED")
+def chain_id(csv_file: str | Path) -> int:
+    """Return the chain id of a CmdStan CSV file.
+
+    The id is the trailing `_N` of the file name. A one-chain run has no such suffix, because cmdstanpy names its
+    file without one, so the `id = N` line of the CmdStan header is read instead.
+
+    Validation: TESTED.
+    """
+    path = Path(csv_file)
+    head, sep, tail = path.stem.rpartition("_")
+    if sep and head and tail.isdigit():
+        return int(tail)
+    with open(path) as handle:
+        for line in handle:
+            if not line.startswith("#"):
+                break
+            match = _HEADER_ID.match(line)
+            if match:
+                return int(match.group(1))
+    raise ValueError(f"{path}: no chain id in the file name or the CmdStan header")
+
+
 @validation("VALIDATED")
 def chain_csvs_in_order(csv_files: Sequence[str | Path]) -> list[str]:
-    """Sort chain CSV files by their trailing chain index, never lexically.
+    """Sort chain CSV files by their chain id, never lexically.
 
-    Validation: VALIDATED.
+    Validation: VALIDATED. The id comes from `chain_id`, which also reads one-chain files.
     """
-    return sorted((str(p) for p in csv_files), key=lambda s: int(Path(s).stem.rsplit("_", 1)[1]))
+    return sorted((str(p) for p in csv_files), key=chain_id)
 
 
 @validation("VALIDATED")

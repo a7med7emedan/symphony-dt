@@ -2,9 +2,16 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
-## [Unreleased]
+## [2.1.1] - 2026-11-06
+
+### Fixed
+- A fit with exactly one chain crashed after sampling, so every task of a Slurm array failed. cmdstanpy names a
+  one-chain file without its chain id. `fit` now adds the id to the file name, and the chain readers take it from
+  the CmdStan header when a name lacks it, so chain folders written by 2.1.0 still load.
+- Resume and `load_fit` no longer skip one-chain files.
 
 ### Added
+- `diagnostics.chain_id` returns the chain id of a CmdStan CSV file.
 - A container image for every release at `ghcr.io/a7med7emedan/symphony-dt`, for `linux/amd64` and `linux/arm64`.
   It holds the wheel published on PyPI, CmdStan 2.39.0 and a compiled pd_v2, runs as an unprivileged user and
   carries a signed build provenance. The first image is 2.1.0.

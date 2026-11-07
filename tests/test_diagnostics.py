@@ -103,3 +103,31 @@ def test_csv_helpers(tmp_path):
     short.write_text("lp__\n1\n")
     with pytest.raises(GateError, match="unequal"):
         D.read_sampler_columns([*ordered, short])
+
+
+def test_chain_id_reads_the_name_then_the_header(tmp_path):
+    """A one-chain CmdStan file has no `_N` suffix; its id comes from the header, so ordering still works."""
+    named = tmp_path / "model-20261106_2.csv"
+    named.write_text("# id = 9\nlp__\n1\n")
+    single = tmp_path / "model-20261106.csv"
+    single.write_text("# stan_version_major = 2\n# sample\n#   id = 3\n#   data\nlp__\n1\n")
+    underscored = tmp_path / "my_model-20261106.csv"
+    underscored.write_text("#     id = 1 (Default)\nlp__\n1\n")
+    assert D.chain_id(named) == 2
+    assert D.chain_id(single) == 3
+    assert D.chain_id(underscored) == 1
+    assert D.chain_csvs_in_order([single, named, underscored]) == [str(underscored), str(named), str(single)]
+    bare = tmp_path / "thin.csv"
+    bare.write_text("lp__\n1\n")
+    with pytest.raises(ValueError, match="no chain id"):
+        D.chain_id(bare)
+
+
+def test_chains_by_id_finds_one_chain_files(tmp_path):
+    from symphony_dt.fit import _chains_by_id
+
+    (tmp_path / "model-1_1.csv").write_text("# id = 1\nlp__\n1\n")
+    (tmp_path / "model-2.csv").write_text("#   id = 2\nlp__\n1\n")
+    (tmp_path / "STALE_1_model-3.csv").write_text("#   id = 3\nlp__\n1\n")
+    (tmp_path / "notes.csv").write_text("a\n1\n")
+    assert sorted(_chains_by_id(tmp_path)) == [1, 2]
