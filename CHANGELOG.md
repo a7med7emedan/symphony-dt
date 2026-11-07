@@ -2,6 +2,12 @@
 
 All notable changes are recorded here. The project follows semantic versioning.
 
+## [Unreleased]
+
+### Added
+- A Zenodo DOI for the software, 10.5281/zenodo.24029869, in the README, the citation page and `CITATION.cff`.
+  Every release from 2.1.1 on is archived on Zenodo with its own DOI.
+
 ## [2.1.1] - 2026-11-06
 
 ### Fixed

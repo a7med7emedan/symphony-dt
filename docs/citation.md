@@ -2,8 +2,11 @@
 
 If you use symphony-dt, cite the software:
 
-> Hemedan A. symphony-dt: Bayesian digital twins of Parkinson's disease progression, version 2.0.0.
-> https://github.com/a7med7emedan/symphony-dt
+> Hemedan A. symphony-dt: Bayesian digital twins of Parkinson's disease progression. Zenodo.
+> https://doi.org/10.5281/zenodo.24029869
+
+This DOI always resolves to the newest release. Each release also has its own DOI, listed on the
+[Zenodo record](https://doi.org/10.5281/zenodo.24029869); cite that one to name the exact version you used.
 
 The repository holds a `CITATION.cff` file, which GitHub turns into BibTeX and APA. The validation manuscript is in
 preparation; this page will add it once published.

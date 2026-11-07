@@ -10,6 +10,7 @@ authors:
   - family-names: Hemedan
     given-names: Ahmed
 version: 2.1.1
+doi: 10.5281/zenodo.24029869
 date-released: 2026-11-06
 license: BSD-3-Clause
 repository-code: "https://github.com/a7med7emedan/symphony-dt"
