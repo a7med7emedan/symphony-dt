@@ -14,6 +14,7 @@
   <a href="https://a7med7emedan.github.io/symphony-dt/"><img src="https://img.shields.io/endpoint?url=https://a7med7emedan.github.io/symphony-dt/coverage-badge.json" alt="Coverage"></a>
   <a href="https://a7med7emedan.github.io/symphony-dt/"><img src="https://github.com/a7med7emedan/symphony-dt/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
   <a href="https://github.com/a7med7emedan/symphony-dt/blob/main/LICENSE"><img src="https://img.shields.io/badge/licence-BSD--3--Clause-blue.svg" alt="Licence"></a>
+  <a href="https://doi.org/10.5281/zenodo.24029869"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.24029869.svg" alt="DOI"></a>
 </p>
 
 symphony-dt builds, checks, calibrates, forecasts with and audits Bayesian digital twins of longitudinal clinical
@@ -92,8 +93,11 @@ Every public function carries a validation label: VALIDATED, TESTED or EXPERIMEN
 
 ## Citation
 
-> Hemedan A. symphony-dt: Bayesian digital twins of Parkinson's disease progression, version 2.0.0.
-> https://github.com/a7med7emedan/symphony-dt
+> Hemedan A. symphony-dt: Bayesian digital twins of Parkinson's disease progression. Zenodo.
+> https://doi.org/10.5281/zenodo.24029869
+
+This DOI always resolves to the newest release. Each release also has its own DOI, listed on the
+[Zenodo record](https://doi.org/10.5281/zenodo.24029869); cite that one to name the exact version you used.
 
 See [CITATION.cff](https://github.com/a7med7emedan/symphony-dt/blob/main/CITATION.cff).
 
