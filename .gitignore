@@ -28,3 +28,8 @@ symphony_runs/
 # tutorial outputs
 docs/tutorials/tutorial_*/
 docs/coverage-badge.json
+
+# local leftovers, kept out of the repository
+.cache/
+.dev/
+STALE_*/
