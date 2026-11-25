@@ -17,6 +17,22 @@ freezing needs a deviation record.
 **Which forecast route should I use?**
 Use the exact route for evaluation and reporting. The fast route is EXPERIMENTAL and suits exploration.
 
+**Can I model a disease other than Parkinson's disease?**
+Not with pd_v2, whose three domains and instruments are fixed. Write a new Stan program and register it beside
+pd_v2 with `register_model`, under its own name and digests. See [Models](guide/models.md).
+
+**Can I use my own cohort?**
+Yes. Map it with a shipped mapping or your own, then check it with `symphony-dt envelope`. A cohort outside the
+design envelope may still fit, but pd_v2 was not developed for it. See [Interoperability](interoperability.md).
+
+**How long does a fit take?**
+Cost grows with participants, visits and sub-steps, because every sub-step adds three latent innovations to the
+sampler. Small synthetic cohorts suit a laptop. Full cohorts at study settings suit a cluster; see
+[Running on any machine](guide/compute.md).
+
+**What does the package not do yet?**
+The [roadmap](roadmap.md) lists the gaps, ordered by what they would add to the evidence.
+
 **Is the twin a clinical tool?**
 No. It produces associational forecasts for research. It makes no causal or treatment claim.
 

@@ -30,6 +30,22 @@ digital twin, drawn as posterior samples.
 | score forecasts against LOCF and a mixed model | [Evaluation](guide/evaluate.md) |
 | run simulation-based calibration and predictive checks | [Calibration checks](guide/calibration.md) |
 | record manifests, provenance, frozen specifications and reports | [Governance](guide/governance.md) |
+| run a whole study from one `study.yaml` | [The modeller's workflow](guide/workflow.md) |
+| keep a twin per person that learns from each visit (EXPERIMENTAL) | [The living twin](guide/twin.md) |
+| run on Slurm, Docker or Apptainer, or move a run between machines | [Running on any machine](guide/compute.md) |
+| compare a method against the twin on synthetic scenarios | [Benchmark](benchmark.md) |
+
+## Where to start
+
+- **New to the package.** Read [Installation](installation.md), then run the [Quickstart](quickstart.md) and the
+  first [tutorial](tutorials/01_simulate_and_validate.ipynb).
+- **New to the model.** Read [Digital twins](concepts/digital-twin.md), then
+  [The state-space model](concepts/state-space-model.md) and the [model card](model-card.md).
+- **Bringing your own data.** Read [Interoperability](interoperability.md), then [Data](guide/data.md) and the
+  [workflow](guide/workflow.md).
+- **Judging the evidence.** Read [Uncertainty and calibration](concepts/uncertainty.md),
+  [Convergence gates](concepts/gates.md) and [Validation status](validation-status.md).
+- **Planning what comes next.** Read the [roadmap](roadmap.md), which lists what the package still lacks.
 
 ## Validation labels
 
