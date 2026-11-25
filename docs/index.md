@@ -45,7 +45,7 @@ digital twin, drawn as posterior samples.
   [workflow](guide/workflow.md).
 - **Judging the evidence.** Read [Uncertainty and calibration](concepts/uncertainty.md),
   [Convergence gates](concepts/gates.md) and [Validation status](validation-status.md).
-- **Planning what comes next.** Read the [roadmap](roadmap.md), which lists what the package still lacks.
+- **Following development.** Read the [development history](roadmap.md), which records what each release added.
 
 ## Validation labels
 

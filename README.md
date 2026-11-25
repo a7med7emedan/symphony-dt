@@ -122,7 +122,7 @@ every public object.
 pd_v2 is a research model with stated limits. Scores are treated as continuous, although they are sums of ordinal
 items. The motor floor and severity-dependent noise are only partly modelled. Informative dropout is not modelled.
 Levodopa enters the motor reading only, as a dose term. The [model card](https://a7med7emedan.github.io/symphony-dt/model-card/)
-lists every known limit, and the [roadmap](https://a7med7emedan.github.io/symphony-dt/roadmap/) plans what comes next.
+lists every known limit, and the [development history](https://a7med7emedan.github.io/symphony-dt/roadmap/) records what each release added.
 
 ## Documentation
 

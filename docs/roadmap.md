@@ -1,7 +1,7 @@
-# Roadmap
+# Development history
 
-This page plans what a computational modeller needs from symphony-dt beyond 2.0. It records what comparable
-tools already do, what we borrow, and what each release delivers. Items marked DONE ship in the release named.
+This page records what each release of symphony-dt added for a computational modeller. It also names the comparable
+tools whose ideas we borrow. Items marked DONE ship in the release named.
 
 ## What comparable tools offer
 
@@ -92,106 +92,11 @@ Synthetic scenarios with known truth cover dense and sparse visits, floor effect
 Each is scored with the same frozen specification for the twin, LOCF and the mixed model. One command runs it and writes a
 table, so any method can be compared on equal terms.
 
-## What the package still lacks
+## Release 2.2: calibration you can break down
 
-This section audits pd_v2 and the package against what a leading Bayesian digital twin of a clinical cohort would
-need. Items are grouped by theme and ordered within each theme by what they would add to the evidence. Many build
-on methods that other tools already offer; the aim is to join them under the same gates and governance.
+### Calibration by subgroup (DONE in 2.2)
 
-### 1. Evidence on people, not only on simulations
-
-Every result so far is synthetic. The benchmark uses an oracle population, so it tests the participant machinery
-but not population estimation.
-
-- Publish the PPMI validation, then validate externally on NCER-PD/LuxPARK with covariate-shift diagnostics.
-- Recalibrate for an external cohort and report coverage before and after.
-- Run a full-size simulation-based calibration of pd_v2 at study settings, with its failure share reported.
-- Report calibration by subgroup: sex, age band, cohort, genotype and site. (DONE: `subgroup_calibration`.)
-- Score events with decision curve analysis as well as Brier score and AUC.
-- Extend the benchmark to estimated populations, and compare with established methods. Candidates are disease
-  course mapping in Leaspy, Bayesian joint models such as JMbayes2, Gaussian process models and neural sequence
-  models.
-
-### 2. Measurement that matches the instruments
-
-pd_v2 reads each score as a bounded Gaussian. MDS-UPDRS Part III, MoCA and SCOPA-AUT are sums of ordinal items.
-
-- An item-level graded response model (Samejima, 1969) for the instruments' items. It handles floors and ceilings
-  by construction and copes with partly completed forms.
-- A discrete likelihood on the sum score, beta-binomial or ordinal, as a lighter step.
-- Examiner and site effects, and the recorded ON or OFF medication state at the motor examination.
-- A transient visit-level term for practice effects. A monotone latent state cannot absorb a MoCA score that
-  rises with repeated testing.
-
-### 3. Biology the model does not yet see
-
-- Biomarkers as further readings of the latent state. Candidates are DaTscan binding ratios, alpha-synuclein seed
-  amplification, neurofilament light, MRI, smell tests and REM sleep behaviour disorder. These matter most in the
-  prodromal stage, where clinical scores move least.
-- A disease-time axis, as in disease course mapping (Schiratti and colleagues, 2017). Prodromal and PD
-  participants could then share one timeline instead of one link offset.
-- Heterogeneity beyond Gaussian rates: mixtures or subtype-specific coupling, and genetic groups such as GBA1 and
-  LRRK2 carriers as hierarchical strata.
-- Levodopa as pharmacology rather than a dose term. Holford and colleagues separate short and long duration
-  responses, which a twin needs before it can describe medicated scores well.
-- Frequent digital measures from wearables and smartphones, with their own measurement models.
-
-### 4. People who leave the study
-
-- A joint model in which the latent state drives the hazard of dropout and death. Informative loss to follow-up
-  then enters the likelihood.
-- Clinical milestones as time-to-event submodels: falls, dementia and loss of independence.
-- Sensitivity analyses for data missing not at random, such as delta adjustment.
-
-### 5. Inference at cohort scale
-
-Every sub-step carries three innovation parameters, so the sampler's dimension grows with follow-up. The model card
-also records slow mixing of the motor link slope and occasional trapped chains.
-
-- Marginalise the innovations, by Kalman-type or Laplace approximations, or move to a continuous-time process with
-  tractable increments.
-- Reparametrise the motor link and initialise chains with Pathfinder, so fewer chains need excluding.
-- Learn the population online, for example by SMC squared (Chopin, Jacob and Papaspiliopoulos, 2013). The twin
-  registry could then relearn without a full refit.
-- Scale within chains on many cores or on GPUs.
-
-### 6. Model criticism and comparison
-
-- Leave-future-out cross-validation (Bürkner, Gabry and Vehtari, 2020), the right criterion for forecasts.
-- PSIS-LOO on held-out log predictive density, and stacking of the model arms (Yao and colleagues, 2018).
-- Prior sensitivity by power scaling (Kallioinen and colleagues, 2024). The process-noise prior conflict on the
-  model card is the first case to test.
-- A per-parameter identifiability report from prior and posterior contraction.
-
-### 7. From one Parkinson's model to a framework
-
-- A declarative model builder. A specification file would name domains, instruments, links and coupling, and the
-  package would generate, digest and register the Stan program. Other progressive conditions could then use the
-  same gates.
-- An R interface, export to ArviZ InferenceData and Leaspy's data format.
-- Federated fitting across sites that cannot share data, for example by expectation propagation over partitions
-  (Vehtari and colleagues, 2020).
-
-### 8. Uses beyond forecasting, framed with care
-
-- Prognostic scores for covariate adjustment in randomised trials, in the style of the PROCOVA method that the
-  EMA qualified. Randomisation carries the causal weight; the twin supplies an associational prognosis.
-- Visit scheduling by value of information, with visit cost and participant burden, across all endpoints.
-- Any counterfactual use needs its own causal layer, with target trial emulation, stated assumptions and
-  sensitivity analysis. That layer is out of scope for now.
-
-### 9. Credibility for regulated settings
-
-- A credibility plan in the style of ASME V&V 40, which the FDA's guidance on computational models also uses. It
-  would state the context of use, the model risk and the evidence each claim needs.
-- Risk of bias appraisal with PROBAST beside the existing TRIPOD+AI helper.
-- An interactive participant report, tested with clinicians for how well it conveys uncertainty.
-- A software life cycle suited to medical devices, only if a clinical use is ever pursued.
-
-### Where to start
-
-Three steps would add the most evidence per unit of work:
-
-1. External validation with leave-future-out scoring and subgroup calibration.
-2. An item-level measurement model with a joint dropout model.
-3. Marginalised innovations, which would make the first two affordable at cohort scale.
+`subgroup_calibration` reports 50% and 95% interval coverage and CRPS for the twin, LOCF and the mixed model.
+It does so within each level of a grouping such as sex, age band, cohort, genotype or site. Each cell carries a
+participant-cluster bootstrap interval. The twin also gets a PIT uniformity test with a multiplicity adjustment.
+Cells with fewer than ten participants are suppressed. See [Evaluate](guide/evaluate.md).

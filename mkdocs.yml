@@ -102,7 +102,7 @@ nav:
       - Study, outputs, compute, bench: api/workflow.md
       - Reports, plots and CLI: api/other.md
   - Benchmark: benchmark.md
-  - Roadmap: roadmap.md
+  - Development history: roadmap.md
   - Validation status: validation-status.md
   - Model card: model-card.md
   - Governance and data access: governance.md
