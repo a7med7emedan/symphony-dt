@@ -9,9 +9,11 @@ type: software
 authors:
   - family-names: Hemedan
     given-names: Ahmed
+    orcid: "https://orcid.org/0000-0001-7403-181X"
+    affiliation: "Luxembourg Institute of Health"
 version: 2.1.1
 doi: 10.5281/zenodo.24029869
-date-released: 2026-11-06
+date-released: 2026-11-07
 license: BSD-3-Clause
 repository-code: "https://github.com/a7med7emedan/symphony-dt"
 url: "https://a7med7emedan.github.io/symphony-dt/"
@@ -23,3 +25,55 @@ keywords:
   - uncertainty-quantification
   - clinical-prediction
   - reproducibility
+references:
+  - type: article
+    title: "A clinic-updated digital twin for Parkinson's disease progression: Governed Bayesian forecasting with uncertainty-gated reporting"
+    authors:
+      - family-names: "Hemedan"
+        given-names: "Ahmed Abdelmonem"
+        orcid: "https://orcid.org/0000-0001-7403-181X"
+      - family-names: "Despotovic"
+        given-names: "Vladimir"
+        orcid: "https://orcid.org/0000-0002-8950-4111"
+      - family-names: "Lukashiv"
+        given-names: "Taras O."
+        orcid: "https://orcid.org/0000-0002-1651-6402"
+      - family-names: "Rian"
+        given-names: "Kinza"
+        orcid: "https://orcid.org/0000-0003-4314-7208"
+      - family-names: "Jónsdóttir"
+        given-names: "Sonja R."
+        orcid: "https://orcid.org/0000-0002-1060-4356"
+      - family-names: "Pauly"
+        given-names: "Claire"
+        orcid: "https://orcid.org/0000-0002-1824-5546"
+      - family-names: "Pavelka"
+        given-names: "Lukas"
+        orcid: "https://orcid.org/0000-0002-7721-3317"
+      - family-names: "Béchet"
+        given-names: "Sibylle"
+        orcid: "https://orcid.org/0000-0001-5018-9903"
+      - family-names: "Ademola"
+        given-names: "Esther"
+        orcid: "https://orcid.org/0009-0000-8016-060X"
+      - family-names: "Leonard"
+        given-names: "Morgan"
+        orcid: "https://orcid.org/0009-0002-3112-9918"
+      - family-names: "Maia Ladeira"
+        given-names: "Luiz Carlos"
+        orcid: "https://orcid.org/0000-0002-7152-2688"
+      - family-names: "Nazarov"
+        given-names: "Petr V."
+        orcid: "https://orcid.org/0000-0003-3443-0298"
+      - family-names: "Geris"
+        given-names: "Liesbet"
+        orcid: "https://orcid.org/0000-0002-8180-1445"
+      - family-names: "Satagopam"
+        given-names: "Venkata P."
+        orcid: "https://orcid.org/0000-0002-6532-5880"
+      - family-names: "Krüger"
+        given-names: "Rejko"
+        orcid: "https://orcid.org/0000-0003-4258-6241"
+    doi: 10.64898/2026.03.19.26348807
+    year: 2026
+    journal: medRxiv
