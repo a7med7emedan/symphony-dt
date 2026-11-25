@@ -1,0 +1,26 @@
+name: Paper
+
+on:
+  push:
+    paths: [paper/**, .github/workflows/paper.yml]
+  pull_request:
+    paths: [paper/**, .github/workflows/paper.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  draft-pdf:
+    name: JOSS draft PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+      - uses: openjournals/openjournals-draft-action@af22ceb4b8f9eff6b3a13c05747ccc2f573cf2e6  # master, 2026-09-23
+        with:
+          journal: joss
+          paper-path: paper/paper.md
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: paper
+          path: paper/paper.pdf
