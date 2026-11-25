@@ -4,6 +4,10 @@ All notable changes are recorded here. The project follows semantic versioning.
 
 ## [Unreleased]
 
+### Documentation
+
+- The roadmap page is now a development history that records what each release added.
+
 ## [2.2.0] - 2026-11-25
 
 Calibration by subgroup, a rewritten README and documentation set, an audit of what the package still lacks, and

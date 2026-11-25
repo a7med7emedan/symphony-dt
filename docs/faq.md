@@ -30,9 +30,6 @@ Cost grows with participants, visits and sub-steps, because every sub-step adds 
 sampler. Small synthetic cohorts suit a laptop. Full cohorts at study settings suit a cluster; see
 [Running on any machine](guide/compute.md).
 
-**What does the package not do yet?**
-The [roadmap](roadmap.md) lists the gaps, ordered by what they would add to the evidence.
-
 **Is the twin a clinical tool?**
 No. It produces associational forecasts for research. It makes no causal or treatment claim.
 
