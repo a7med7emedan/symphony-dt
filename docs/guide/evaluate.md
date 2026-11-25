@@ -20,5 +20,37 @@ from a participant-cluster bootstrap with 1,000 replicates.
 `pool_folds` adds event metrics: Brier, Brier skill and AUC. It adds strata by sex, cohort, age band, visits before
 the anchor and follow-up. It suppresses any cell with fewer than 10 participants.
 
+## Calibration by subgroup (TESTED)
+
+A twin can be calibrated overall and miscalibrated in a subgroup, such as older participants or one site.
+`subgroup_calibration` scores the per-target table within each level of any grouping you name. It reports 50% and
+95% interval coverage and CRPS for the twin, LOCF and the mixed model, each with a participant-cluster bootstrap
+interval. For the twin it adds the mean and spread of the PIT values and a Kolmogorov-Smirnov test of uniformity.
+
+```python
+from symphony_dt.evaluate import age_band, subgroup_calibration
+ts = scores.target_scores
+site = {i: site_of[i] for i in ts["i"].unique()}   # your own participant-to-site lookup
+result = subgroup_calibration(
+    ts,
+    {"sex": "sex", "cohort": "cohort", "age band": age_band(ts["age"]), "site": site},
+    twin_draws=forecast.draws,
+)
+print(result.to_markdown(metric="c95"))
+result.plot(metric="c95", endpoint="moca")
+```
+
+A grouping is a column of the table, a mapping from participant index to label, or one label per row. Genotype
+groups and sites come as mappings, because the scoring table does not hold them. An overall row is always included,
+so each level can be read against the whole fold.
+
+Three cautions apply. A cell with fewer than `min_cell` participants, 10 by default, is suppressed in the table,
+the Markdown and the plot. The PIT values of one participant are correlated, so the uniformity p-values are
+approximate. Many cells mean many tests, so the p-values are adjusted by Benjamini-Hochberg by default; pass
+`multiplicity="bonferroni"` or `"none"` to change this.
+
+`pool_folds` already reports twin coverage by sex, cohort and age band for the study. `subgroup_calibration`
+extends that check to any grouping, to CRPS and PIT, and to both baselines.
+
 The building blocks are public: `crps_ensemble`, `interval_coverage`, `fit_lmm_em`, `event_probability`,
 `auc_with_ties` and `bootstrap_mean`.

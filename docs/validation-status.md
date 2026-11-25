@@ -6,7 +6,7 @@ Every public function and class carries one of three labels.
 - **TESTED**: correct on synthetic data and unit tests, not validated on a clinical cohort.
 - **EXPERIMENTAL**: works and is tested, but its design is not settled.
 
-Counts: 43 VALIDATED, 158 TESTED, 14 EXPERIMENTAL.
+Counts: 43 VALIDATED, 162 TESTED, 14 EXPERIMENTAL.
 
 | object | label |
 |---|---|
@@ -117,6 +117,9 @@ Counts: 43 VALIDATED, 158 TESTED, 14 EXPERIMENTAL.
 | `evaluate.spec.freeze_spec` | <span class="validation-TESTED">TESTED</span> |
 | `evaluate.spec.load_frozen_spec` | <span class="validation-TESTED">TESTED</span> |
 | `evaluate.spec.require_frozen` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.subgroups.SubgroupCalibration` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.subgroups.age_band` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.subgroups.subgroup_calibration` | <span class="validation-TESTED">TESTED</span> |
 | `fit.FitResult` | <span class="validation-TESTED">TESTED</span> |
 | `fit.chain_is_complete` | <span class="validation-TESTED">TESTED</span> |
 | `fit.fit` | <span class="validation-TESTED">TESTED</span> |
@@ -199,6 +202,7 @@ Counts: 43 VALIDATED, 158 TESTED, 14 EXPERIMENTAL.
 | `plots.plot_rank` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_rank_histogram` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_reliability` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_subgroup_calibration` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_trace` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_trajectory` | <span class="validation-TESTED">TESTED</span> |
 | `plots.save_figure` | <span class="validation-TESTED">TESTED</span> |

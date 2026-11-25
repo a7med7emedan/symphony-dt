@@ -106,7 +106,7 @@ but not population estimation.
 - Publish the PPMI validation, then validate externally on NCER-PD/LuxPARK with covariate-shift diagnostics.
 - Recalibrate for an external cohort and report coverage before and after.
 - Run a full-size simulation-based calibration of pd_v2 at study settings, with its failure share reported.
-- Report calibration by subgroup: sex, age band, cohort, genotype and site.
+- Report calibration by subgroup: sex, age band, cohort, genotype and site. (DONE: `subgroup_calibration`.)
 - Score events with decision curve analysis as well as Brier score and AUC.
 - Extend the benchmark to estimated populations, and compare with established methods. Candidates are disease
   course mapping in Leaspy, Bayesian joint models such as JMbayes2, Gaussian process models and neural sequence
