@@ -11,9 +11,9 @@ authors:
     given-names: Ahmed
     orcid: "https://orcid.org/0000-0001-7403-181X"
     affiliation: "Luxembourg Institute of Health"
-version: 2.1.1
+version: 2.2.0
 doi: 10.5281/zenodo.24029869
-date-released: 2026-11-07
+date-released: 2026-11-25
 license: BSD-3-Clause
 repository-code: "https://github.com/a7med7emedan/symphony-dt"
 url: "https://a7med7emedan.github.io/symphony-dt/"
