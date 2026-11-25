@@ -5,6 +5,10 @@ All notable changes are recorded here. The project follows semantic versioning.
 ## [Unreleased]
 
 ### Added
+- `evaluate.subgroup_calibration` scores interval coverage, CRPS and PIT uniformity within each level of any
+  grouping, such as sex, cohort, age band, genotype group or site. It covers the twin and both baselines, uses a
+  participant-cluster bootstrap, adjusts the PIT tests for multiplicity and suppresses small cells. TESTED.
+- `evaluate.age_band` labels ages by band, and `plots.plot_subgroup_calibration` draws the subgroup scores.
 - A Zenodo DOI for the software, 10.5281/zenodo.24029869, in the README, the citation page and `CITATION.cff`.
   Every release from 2.1.1 on is archived on Zenodo with its own DOI.
 

@@ -33,6 +33,7 @@ __all__ = [
     "plot_rank",
     "plot_rank_histogram",
     "plot_reliability",
+    "plot_subgroup_calibration",
     "plot_trace",
     "plot_trajectory",
     "save_figure",
@@ -159,6 +160,44 @@ def plot_coverage_by_window(scores: Mapping[str, Any], *, level: str = "c95", ax
     ax.axhline(0.95 if level == "c95" else 0.5, color=PALETTE["black"], linewidth=0.8, linestyle=":")
     ax.set_xticks(np.arange(len(keys)), keys, rotation=60, ha="right")
     ax.set_ylabel(f"{'95' if level == 'c95' else '50'}% interval coverage")
+    ax.legend(frameon=False)
+    return ax
+
+
+@validation("TESTED")
+def plot_subgroup_calibration(result: Any, *, metric: str = "c95", endpoint: str | None = None, ax: Any = None) -> Any:
+    """Plot a calibration metric per subgroup level, with bootstrap intervals, for each method.
+
+    `result` is a SubgroupCalibration. Suppressed cells are left out. For coverage the nominal level
+    is drawn as a line. `endpoint` selects one endpoint; by default the first one present.
+
+    Validation: TESTED.
+    """
+    if metric not in ("c50", "c95", "crps"):
+        raise ValueError("metric must be 'c50', 'c95' or 'crps'")
+    ax = _axes(ax)
+    table = result.table[~result.table["suppressed"]]
+    if endpoint is None:
+        endpoint = str(table["endpoint"].iloc[0]) if len(table) else C.ENDPOINTS[0]
+    table = table[table["endpoint"] == endpoint]
+    keys = list(dict.fromkeys(zip(table["grouping"], table["level"], strict=True)))
+    methods = (("twin", PALETTE["blue"]), ("locf", PALETTE["orange"]), ("lmm", PALETTE["green"]))
+    for j, (method, colour) in enumerate(methods):
+        rows = table[table["method"] == method].set_index(["grouping", "level"])
+        if rows.empty:
+            continue
+        x = np.arange(len(keys)) + (j - 1) * 0.25
+        est = np.array([rows.loc[key, metric] if key in rows.index else np.nan for key in keys], float)
+        lo = np.array([rows.loc[key, f"{metric}_lo"] if key in rows.index else np.nan for key in keys], float)
+        hi = np.array([rows.loc[key, f"{metric}_hi"] if key in rows.index else np.nan for key in keys], float)
+        ax.errorbar(x, est, yerr=[est - lo, hi - est], fmt="o", color=colour, label=method, capsize=2)
+    if metric != "crps":
+        ax.axhline(0.95 if metric == "c95" else 0.5, color=PALETTE["black"], linewidth=0.8, linestyle=":")
+        ax.set_ylabel(f"{'95' if metric == 'c95' else '50'}% interval coverage")
+    else:
+        ax.set_ylabel("CRPS (lower is better)")
+    ax.set_xticks(np.arange(len(keys)), [f"{g}: {lev}" for g, lev in keys], rotation=60, ha="right")
+    ax.set_title(endpoint)
     ax.legend(frameon=False)
     return ax
 

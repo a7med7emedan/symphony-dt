@@ -28,6 +28,7 @@ from symphony_dt.evaluate.spec import (
     load_frozen_spec,
     require_frozen,
 )
+from symphony_dt.evaluate.subgroups import SubgroupCalibration, age_band, subgroup_calibration
 
 __all__ = [
     "EVENT_THRESHOLDS",
@@ -37,6 +38,8 @@ __all__ = [
     "LMMFit",
     "PooledScores",
     "ScoringSpec",
+    "SubgroupCalibration",
+    "age_band",
     "auc_with_ties",
     "bootstrap_mean",
     "bootstrap_ratio_skill",
@@ -58,4 +61,5 @@ __all__ = [
     "pool_folds",
     "require_frozen",
     "score_fold",
+    "subgroup_calibration",
 ]
