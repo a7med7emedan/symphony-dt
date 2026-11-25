@@ -8,6 +8,13 @@ All notable changes are recorded here. The project follows semantic versioning.
 - A Zenodo DOI for the software, 10.5281/zenodo.24029869, in the README, the citation page and `CITATION.cff`.
   Every release from 2.1.1 on is archived on Zenodo with its own DOI.
 
+### Documentation
+- The README says who the package is for, describes the model in one paragraph and shows the study-file workflow.
+  Its feature table now gives each stage's validation label, and it states the model's known limits.
+- The command line page lists every command, grouped by task. The home page adds reading paths, and the FAQ
+  answers questions on other diseases, own cohorts and fitting time.
+- The roadmap audits what the package still lacks, by theme, and names the three steps that would add most evidence.
+
 ## [2.1.1] - 2026-11-06
 
 ### Fixed
