@@ -4,6 +4,11 @@ All notable changes are recorded here. The project follows semantic versioning.
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-25
+
+Calibration by subgroup, a rewritten README and documentation set, an audit of what the package still lacks, and
+citation metadata with the author's ORCID iD.
+
 ### Added
 - `evaluate.subgroup_calibration` scores interval coverage, CRPS and PIT uniformity within each level of any
   grouping, such as sex, cohort, age band, genotype group or site. It covers the twin and both baselines, uses a
@@ -13,6 +18,10 @@ All notable changes are recorded here. The project follows semantic versioning.
 - `evaluate.age_band` labels ages by band, and `plots.plot_subgroup_calibration` draws the subgroup scores.
 - A Zenodo DOI for the software, 10.5281/zenodo.24029869, in the README, the citation page and `CITATION.cff`.
   Every release from 2.1.1 on is archived on Zenodo with its own DOI.
+
+### Fixed
+- The source distribution takes its files from the repository root only, so a local build can no longer
+  pick up a nested copy of the package.
 
 ### Documentation
 - The README says who the package is for, describes the model in one paragraph and shows the study-file workflow.

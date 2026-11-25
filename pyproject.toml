@@ -68,7 +68,7 @@ packages = ["src/symphony_dt"]
 exclude = ["**/*.hpp", "**/*.o"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/symphony_dt", "tests", "LICENSE", "README.md", "CHANGELOG.md", "CITATION.cff", "pyproject.toml"]
+include = ["/src/symphony_dt", "/tests", "/LICENSE", "/README.md", "/CHANGELOG.md", "/CITATION.cff", "/pyproject.toml"]
 exclude = ["**/*.hpp", "**/*.o", "tests/**/__pycache__"]
 
 [tool.ruff]
