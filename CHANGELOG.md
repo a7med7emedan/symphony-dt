@@ -8,6 +8,8 @@ All notable changes are recorded here. The project follows semantic versioning.
 - `evaluate.subgroup_calibration` scores interval coverage, CRPS and PIT uniformity within each level of any
   grouping, such as sex, cohort, age band, genotype group or site. It covers the twin and both baselines, uses a
   participant-cluster bootstrap, adjusts the PIT tests for multiplicity and suppresses small cells. TESTED.
+- The citation metadata carry the author's ORCID iD and affiliation, and link the medRxiv preprint of the first
+  version of the framework.
 - `evaluate.age_band` labels ages by band, and `plots.plot_subgroup_calibration` draws the subgroup scores.
 - A Zenodo DOI for the software, 10.5281/zenodo.24029869, in the README, the citation page and `CITATION.cff`.
   Every release from 2.1.1 on is archived on Zenodo with its own DOI.
@@ -19,7 +21,7 @@ All notable changes are recorded here. The project follows semantic versioning.
   answers questions on other diseases, own cohorts and fitting time.
 - The roadmap audits what the package still lacks, by theme, and names the three steps that would add most evidence.
 
-## [2.1.1] - 2026-11-06
+## [2.1.1] - 2026-11-07
 
 ### Fixed
 - A fit with exactly one chain crashed after sampling, so every task of a Slurm array failed. cmdstanpy names a
