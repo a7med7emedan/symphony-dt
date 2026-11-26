@@ -1,5 +1,6 @@
 """Evaluation: the scoring code of record, its metrics and the pre-registration freeze."""
 
+from symphony_dt.evaluate.decision import DecisionCurve, decision_curve, net_benefit
 from symphony_dt.evaluate.metrics import (
     EVENT_THRESHOLDS,
     LMMFit,
@@ -32,6 +33,7 @@ from symphony_dt.evaluate.subgroups import SubgroupCalibration, age_band, subgro
 
 __all__ = [
     "EVENT_THRESHOLDS",
+    "DecisionCurve",
     "DeviationRecord",
     "FoldScores",
     "FrozenSpec",
@@ -48,6 +50,7 @@ __all__ = [
     "central_interval",
     "cluster_bootstrap_weights",
     "crps_ensemble",
+    "decision_curve",
     "event_indicator",
     "event_probability",
     "fit_lmm_em",
@@ -56,6 +59,7 @@ __all__ = [
     "lmm_condition",
     "load_frozen_spec",
     "mae_median",
+    "net_benefit",
     "obs_table",
     "percentile_interval",
     "pool_folds",
