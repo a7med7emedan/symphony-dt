@@ -24,6 +24,7 @@ __all__ = [
     "plot_coverage_by_window",
     "plot_coverage_calibration",
     "plot_crps_differences",
+    "plot_decision_curve",
     "plot_effects",
     "plot_energy",
     "plot_forecast",
@@ -197,6 +198,46 @@ def plot_subgroup_calibration(result: Any, *, metric: str = "c95", endpoint: str
     else:
         ax.set_ylabel("CRPS (lower is better)")
     ax.set_xticks(np.arange(len(keys)), [f"{g}: {lev}" for g, lev in keys], rotation=60, ha="right")
+    ax.set_title(endpoint)
+    ax.legend(frameon=False)
+    return ax
+
+
+@validation("TESTED")
+def plot_decision_curve(result: Any, *, endpoint: str | None = None, ax: Any = None) -> Any:
+    """Plot net benefit against threshold probability for each strategy, with bootstrap bands.
+
+    `result` is a DecisionCurve. The references "all" and "none" are drawn as grey lines. A
+    suppressed endpoint draws nothing. `endpoint` selects one endpoint; by default the first one.
+
+    Validation: TESTED.
+    """
+    ax = _axes(ax)
+    table = result.table[~result.table["suppressed"].astype(bool)]
+    if endpoint is None:
+        endpoint = str(table["endpoint"].iloc[0]) if len(table) else C.ENDPOINTS[0]
+    table = table[table["endpoint"] == endpoint]
+    styles = {
+        "twin": (PALETTE["blue"], "-"),
+        "locf": (PALETTE["orange"], "-"),
+        "lmm": (PALETTE["green"], "-"),
+        "all": ("#777777", "--"),
+        "none": (PALETTE["black"], ":"),
+    }
+    for strategy, (colour, line) in styles.items():
+        rows = table[table["strategy"] == strategy].sort_values("threshold")
+        if rows.empty:
+            continue
+        x = rows["threshold"].to_numpy(float)
+        ax.plot(x, rows["net_benefit"].to_numpy(float), color=colour, linestyle=line, label=strategy)
+        if strategy not in ("all", "none"):
+            lo, hi = rows["net_benefit_lo"].to_numpy(float), rows["net_benefit_hi"].to_numpy(float)
+            ax.fill_between(x, lo, hi, color=colour, alpha=0.15, linewidth=0)
+    if len(table):
+        top = max(float(table["event_rate"].max()), float(table["net_benefit"].max()), 1e-3) * 1.1
+        ax.set_ylim(-0.25 * top, top)
+    ax.set_xlabel("Threshold probability")
+    ax.set_ylabel("Net benefit")
     ax.set_title(endpoint)
     ax.legend(frameon=False)
     return ax

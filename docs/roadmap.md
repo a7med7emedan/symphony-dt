@@ -100,3 +100,11 @@ table, so any method can be compared on equal terms.
 It does so within each level of a grouping such as sex, age band, cohort, genotype or site. Each cell carries a
 participant-cluster bootstrap interval. The twin also gets a PIT uniformity test with a multiplicity adjustment.
 Cells with fewer than ten participants are suppressed. See [Evaluate](guide/evaluate.md).
+
+## Next release
+
+### Decision curve analysis (DONE, not yet released)
+
+`decision_curve` reports net benefit of the event forecasts across threshold probabilities. It scores the twin, LOCF
+and the mixed model beside flagging all targets or none. Each estimate carries a participant-cluster bootstrap interval.
+See [Evaluate](guide/evaluate.md).

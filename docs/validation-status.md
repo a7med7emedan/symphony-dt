@@ -6,7 +6,7 @@ Every public function and class carries one of three labels.
 - **TESTED**: correct on synthetic data and unit tests, not validated on a clinical cohort.
 - **EXPERIMENTAL**: works and is tested, but its design is not settled.
 
-Counts: 43 VALIDATED, 162 TESTED, 14 EXPERIMENTAL.
+Counts: 43 VALIDATED, 166 TESTED, 14 EXPERIMENTAL.
 
 | object | label |
 |---|---|
@@ -90,6 +90,9 @@ Counts: 43 VALIDATED, 162 TESTED, 14 EXPERIMENTAL.
 | `diagnostics.read_sampler_columns` | <span class="validation-TESTED">TESTED</span> |
 | `diagnostics.retained_chains` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `diagnostics.summary_on_chains` | <span class="validation-VALIDATED">VALIDATED</span> |
+| `evaluate.decision.DecisionCurve` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.decision.decision_curve` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.decision.net_benefit` | <span class="validation-TESTED">TESTED</span> |
 | `evaluate.metrics.LMMFit` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `evaluate.metrics.auc_with_ties` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `evaluate.metrics.bootstrap_mean` | <span class="validation-VALIDATED">VALIDATED</span> |
@@ -193,6 +196,7 @@ Counts: 43 VALIDATED, 162 TESTED, 14 EXPERIMENTAL.
 | `plots.plot_coverage_by_window` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_coverage_calibration` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_crps_differences` | <span class="validation-TESTED">TESTED</span> |
+| `plots.plot_decision_curve` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_effects` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_energy` | <span class="validation-TESTED">TESTED</span> |
 | `plots.plot_forecast` | <span class="validation-TESTED">TESTED</span> |

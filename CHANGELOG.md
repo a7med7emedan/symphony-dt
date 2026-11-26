@@ -4,6 +4,11 @@ All notable changes are recorded here. The project follows semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `decision_curve`, `net_benefit` and `plot_decision_curve`: net benefit of the event forecasts across
+  threshold probabilities, with participant-cluster bootstrap intervals (TESTED).
+
 ### Documentation
 
 - The roadmap page is now a development history that records what each release added.

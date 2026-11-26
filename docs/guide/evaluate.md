@@ -52,5 +52,29 @@ approximate. Many cells mean many tests, so the p-values are adjusted by Benjami
 `pool_folds` already reports twin coverage by sex, cohort and age band for the study. `subgroup_calibration`
 extends that check to any grouping, to CRPS and PIT, and to both baselines.
 
+## Decision curve analysis (TESTED)
+
+Brier scores and AUC summarise the event forecasts. They do not say whether flagging a participant at a given risk
+would be worth it. `decision_curve` reports net benefit across threshold probabilities, as proposed by Vickers
+and Elkin (2006). A target is flagged when its forecast event probability is at least the threshold. Net benefit is
+the share of true flags minus the share of false flags, weighted by the odds of the threshold.
+
+```python
+from symphony_dt.evaluate import decision_curve
+curve = decision_curve(scores.target_scores)
+print(curve.to_markdown(thresholds=(0.05, 0.1, 0.2, 0.3)))
+curve.plot(endpoint="updrs3")
+```
+
+The twin, LOCF and the mixed model are scored on the same targets. Two references are always included: flag every
+target ("all") and flag none ("none"). The literature calls these "treat all" and "treat none". A forecast is of use
+at a threshold only where its curve lies above both references. Each estimate carries a participant-cluster
+bootstrap interval, and the same resamples serve every curve of an endpoint.
+
+The events follow the scoring code of record. They are a UPDRS-III worsening of 5 points or more and a MoCA decline
+of 2 points or more. An endpoint with fewer than `min_cell` participants, events or non-events is suppressed. Net
+benefit describes forecasts against observed events. It does not show that acting on a flag changes any outcome.
+`net_benefit` scores a single threshold for your own probabilities.
+
 The building blocks are public: `crps_ensemble`, `interval_coverage`, `fit_lmm_em`, `event_probability`,
-`auc_with_ties` and `bootstrap_mean`.
+`auc_with_ties`, `net_benefit` and `bootstrap_mean`.
