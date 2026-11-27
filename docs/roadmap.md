@@ -108,3 +108,9 @@ Cells with fewer than ten participants are suppressed. See [Evaluate](guide/eval
 `decision_curve` reports net benefit of the event forecasts across threshold probabilities. It scores the twin, LOCF
 and the mixed model beside flagging all targets or none. Each estimate carries a participant-cluster bootstrap interval.
 See [Evaluate](guide/evaluate.md).
+
+### Leave-future-out predictive density (DONE, not yet released)
+
+`leave_future_out` scores exact leave-future-out log predictive density over several anchors. It uses the model's
+own truncated or censored density and scores each target and each participant's future block. Totals by anchor and
+endpoint carry a participant-cluster standard error. See [Evaluate](guide/evaluate.md).

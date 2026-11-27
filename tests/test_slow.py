@@ -15,9 +15,9 @@ from typer.testing import CliRunner
 from symphony_dt.cli import app
 from symphony_dt.data import Standardisation, simulate_cohort
 from symphony_dt.diagnostics import GateOverride, GateOverrideWarning
-from symphony_dt.evaluate import ScoringSpec, freeze_spec, score_fold
+from symphony_dt.evaluate import ScoringSpec, anchor_draws, freeze_spec, leave_future_out, score_fold
 from symphony_dt.fit import chain_is_complete, fit, load_fit
-from symphony_dt.forecast import forecast_exact, forecast_fast, split_at_anchor
+from symphony_dt.forecast import forecast_exact, forecast_fast, read_gq_csv, split_at_anchor
 
 pytestmark = pytest.mark.slow
 
@@ -125,6 +125,18 @@ def test_exact_and_fast_routes_agree_on_synthetic_data(fitted, tmp_path):
     fast_draws = fast.draws[:, k - 1]
     width = np.subtract(*np.quantile(exact_draws, [0.95, 0.05]))
     assert abs(np.median(fast_draws) - np.median(exact_draws)) < max(width, 5.0)
+
+
+def test_leave_future_out_rebuilds_the_programs_mean(fitted, tmp_path):
+    _, split, result, _ = fitted
+    exact = forecast_exact(result, split, total_keep=400, output_dir=tmp_path / "lfo")
+    draws = anchor_draws(exact, split)
+    mu_c = read_gq_csv(exact.metadata["gq_csv"], len(split.meta), prefix="mu_c")
+    np.testing.assert_allclose(draws.mu, mu_c, rtol=1e-4, atol=1e-4)
+    scores = leave_future_out({split.anchor_years: draws})
+    assert len(scores.pointwise) == len(split.meta)
+    assert np.isfinite(scores.pointwise["elpd"]).all()
+    assert scores.joint["i"].nunique() == split.meta["i"].nunique()
 
 
 def test_cli_fit_gates_and_ppc(tmp_path):

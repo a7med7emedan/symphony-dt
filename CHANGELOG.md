@@ -8,6 +8,9 @@ All notable changes are recorded here. The project follows semantic versioning.
 
 - `decision_curve`, `net_benefit` and `plot_decision_curve`: net benefit of the event forecasts across
   threshold probabilities, with participant-cluster bootstrap intervals (TESTED).
+- `leave_future_out`, `predictive_log_density`, `observation_draws`, `anchor_draws`, `AnchorDraws` and
+  `LFOScores`: exact leave-future-out log predictive density over several anchors, under the model's truncated or
+  censored density, per target and per participant block (TESTED).
 
 ### Documentation
 

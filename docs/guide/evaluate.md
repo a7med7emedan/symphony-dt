@@ -76,5 +76,44 @@ of 2 points or more. An endpoint with fewer than `min_cell` participants, events
 benefit describes forecasts against observed events. It does not show that acting on a flag changes any outcome.
 `net_benefit` scores a single threshold for your own probabilities.
 
+## Leave-future-out predictive density (TESTED)
+
+Coverage and CRPS judge the forecast draws one target at a time. The log predictive density scores the whole
+forecast distribution at the observed value, and it is the natural criterion for comparing models. A forecast
+should only be scored on data later than the history it saw. `leave_future_out` therefore scores exact
+leave-future-out density, as set out by Bürkner, Gabry and Vehtari (2020). At each anchor the model is refitted on
+the data up to that anchor, so no importance sampling is needed.
+
+```python
+from symphony_dt.evaluate import anchor_draws, leave_future_out
+from symphony_dt.fit import fit
+from symphony_dt.forecast import forecast_exact, split_at_anchor
+
+per_anchor = {}
+for anchor in (1.0, 2.0, 3.0):
+    split = split_at_anchor(stan_data, test_index, anchor_years=anchor)
+    result = fit(split.fit, chains=4, output_dir=f"lfo/fit_{anchor:g}")
+    forecast = forecast_exact(result, split, output_dir=f"lfo/forecast_{anchor:g}")
+    per_anchor[anchor] = anchor_draws(forecast, split)
+scores = leave_future_out(per_anchor)
+print(scores.to_markdown())
+```
+
+Each target scores the log of the mean, over posterior draws, of its observation density. The density is the one
+in the model. A truncated endpoint gets a normal renormalised to the scale bounds. A censored endpoint gets a tobit
+density with point masses at the bounds. `anchor_draws` rebuilds the observation mean and noise of every draw from
+the thinned fit. The rebuilt mean matches the `mu_c` output of the generated-quantities program, and a slow test
+checks this.
+
+`scores.pointwise` holds one row per anchor and target, with a Monte Carlo standard error. `scores.joint` holds the
+joint density of each participant's future block. Given a latent path the targets are independent, so the joint
+density keeps the dependence that the shared path induces. `scores.summary` sums by anchor and endpoint, with a
+standard error clustered on participant. Rows with anchor "all" pool the anchors. `scores.compare(other)` gives the
+paired difference between two models or arms on their shared targets.
+
+The densities are on the scale of the data, so they compare models fitted to the same targets. They describe the
+fit of forecasts to later observations and do not support a causal or treatment claim. For your own forecasts, build
+`AnchorDraws` directly from draws of the mean and noise, or call `predictive_log_density`.
+
 The building blocks are public: `crps_ensemble`, `interval_coverage`, `fit_lmm_em`, `event_probability`,
-`auc_with_ties`, `net_benefit` and `bootstrap_mean`.
+`auc_with_ties`, `net_benefit`, `predictive_log_density` and `bootstrap_mean`.
