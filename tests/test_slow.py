@@ -9,13 +9,22 @@ from __future__ import annotations
 import json
 
 import numpy as np
+import pandas as pd
 import pytest
 from typer.testing import CliRunner
 
 from symphony_dt.cli import app
 from symphony_dt.data import Standardisation, simulate_cohort
 from symphony_dt.diagnostics import GateOverride, GateOverrideWarning
-from symphony_dt.evaluate import ScoringSpec, anchor_draws, freeze_spec, leave_future_out, score_fold
+from symphony_dt.evaluate import (
+    ScoringSpec,
+    anchor_draws,
+    fit_log_likelihood,
+    freeze_spec,
+    leave_future_out,
+    psis_loo,
+    score_fold,
+)
 from symphony_dt.fit import chain_is_complete, fit, load_fit
 from symphony_dt.forecast import forecast_exact, forecast_fast, read_gq_csv, split_at_anchor
 
@@ -137,6 +146,17 @@ def test_leave_future_out_rebuilds_the_programs_mean(fitted, tmp_path):
     assert len(scores.pointwise) == len(split.meta)
     assert np.isfinite(scores.pointwise["elpd"]).all()
     assert scores.joint["i"].nunique() == split.meta["i"].nunique()
+
+
+def test_psis_loo_scores_a_fit_by_visit_and_by_participant(fitted):
+    _, split, result, _ = fitted
+    draws = pd.concat([pd.read_csv(f, comment="#") for f in result.csv_files], ignore_index=True)
+    log_lik, obs = fit_log_likelihood(draws, split.fit)
+    assert log_lik.shape == (len(draws), int(split.fit.data["n_obs"]))
+    by_visit = psis_loo(log_lik)
+    by_participant = psis_loo(log_lik, groups=obs["i"])
+    assert np.isfinite(by_visit.elpd_loo) and np.isfinite(by_participant.elpd_loo)
+    assert len(by_participant.pointwise) == obs["i"].nunique()
 
 
 def test_cli_fit_gates_and_ppc(tmp_path):

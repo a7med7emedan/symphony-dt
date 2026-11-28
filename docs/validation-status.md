@@ -6,7 +6,7 @@ Every public function and class carries one of three labels.
 - **TESTED**: correct on synthetic data and unit tests, not validated on a clinical cohort.
 - **EXPERIMENTAL**: works and is tested, but its design is not settled.
 
-Counts: 43 VALIDATED, 172 TESTED, 14 EXPERIMENTAL.
+Counts: 43 VALIDATED, 183 TESTED, 14 EXPERIMENTAL.
 
 | object | label |
 |---|---|
@@ -99,6 +99,17 @@ Counts: 43 VALIDATED, 172 TESTED, 14 EXPERIMENTAL.
 | `evaluate.lfo.leave_future_out` | <span class="validation-TESTED">TESTED</span> |
 | `evaluate.lfo.observation_draws` | <span class="validation-TESTED">TESTED</span> |
 | `evaluate.lfo.predictive_log_density` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.LOOResult` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.PSISResult` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.fit_generalized_pareto` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.fit_log_likelihood` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.loo_compare` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.pareto_k_threshold` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.pseudo_bma_weights` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.psis` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.psis_loo` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.relative_efficiency` | <span class="validation-TESTED">TESTED</span> |
+| `evaluate.loo.stacking_weights` | <span class="validation-TESTED">TESTED</span> |
 | `evaluate.metrics.LMMFit` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `evaluate.metrics.auc_with_ties` | <span class="validation-VALIDATED">VALIDATED</span> |
 | `evaluate.metrics.bootstrap_mean` | <span class="validation-VALIDATED">VALIDATED</span> |

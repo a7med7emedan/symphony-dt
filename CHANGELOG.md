@@ -11,6 +11,9 @@ All notable changes are recorded here. The project follows semantic versioning.
 - `leave_future_out`, `predictive_log_density`, `observation_draws`, `anchor_draws`, `AnchorDraws` and
   `LFOScores`: exact leave-future-out log predictive density over several anchors, under the model's truncated or
   censored density, per target and per participant block (TESTED).
+- `psis`, `fit_generalized_pareto`, `pareto_k_threshold`, `relative_efficiency`, `psis_loo`, `fit_log_likelihood`,
+  `stacking_weights`, `pseudo_bma_weights` and `loo_compare`: Pareto smoothed importance sampling with k diagnostics,
+  PSIS-LOO per observation or per participant, and stacking of model arms (TESTED).
 
 ### Documentation
 
