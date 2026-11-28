@@ -196,25 +196,57 @@ def psis(log_ratios: ArrayLike, r_eff: ArrayLike = 1.0) -> PSISResult:
     return PSISResult(log_weights=lw, pareto_k=k, n_eff=n_eff, tail_length=m, k_threshold=pareto_k_threshold(n_draw))
 
 
+def _ess(x: NDArray[np.float64]) -> float:
+    """Return the effective sample size of a (chains, draws) array, as computed in Stan.
+
+    The autocorrelations pool the chains, and Geyer's initial monotone sequence truncates them.
+    """
+    m, n = x.shape
+    if np.ptp(x) < np.finfo(float).resolution:
+        return float(m * n)
+    centred = x - x.mean(axis=1, keepdims=True)
+    size = 2 ** int(np.ceil(np.log2(2 * n)))
+    spec = np.fft.rfft(centred, n=size, axis=1)
+    acov = np.fft.irfft(spec * np.conj(spec), n=size, axis=1)[:, :n].mean(axis=0) / n
+    mean_var = float(acov[0]) * n / (n - 1)
+    var_plus = mean_var * (n - 1) / n + (float(np.var(x.mean(axis=1), ddof=1)) if m > 1 else 0.0)
+    rho = np.zeros(n)
+    rho[0], rho[1] = 1.0, 1 - (mean_var - acov[1]) / var_plus
+    even, odd, t = rho[0], rho[1], 1
+    while t < n - 3 and even + odd > 0:
+        even = 1 - (mean_var - acov[t + 1]) / var_plus
+        odd = 1 - (mean_var - acov[t + 2]) / var_plus
+        if even + odd >= 0:
+            rho[t + 1], rho[t + 2] = even, odd
+        t += 2
+    max_t = t - 2
+    if even > 0:
+        rho[max_t + 1] = even
+    t = 1
+    while t <= max_t - 2:
+        if rho[t + 1] + rho[t + 2] > rho[t - 1] + rho[t]:
+            rho[t + 1] = rho[t + 2] = (rho[t - 1] + rho[t]) / 2
+        t += 2
+    tau = -1 + 2 * float(rho[: max_t + 1].sum()) + float(rho[max_t + 1 : max_t + 2].sum())
+    return float(m * n / max(tau, 1 / np.log10(m * n)))
+
+
 @validation("TESTED")
 def relative_efficiency(log_lik: ArrayLike) -> NDArray[np.float64]:
     """Return the relative efficiency of exp(log_lik) for each observation of (chains, draws, n).
 
     It is the effective sample size of the likelihood values over the total number of draws, as in
-    `relative_eff` of the loo R package. The effective sample size comes from ArviZ.
+    `relative_eff` of the loo R package. The effective sample size uses the multi-chain
+    autocorrelation estimate and Geyer's initial monotone sequence, as in Stan.
 
     Validation: TESTED.
     """
-    import arviz as az
-    import xarray as xr
-
     ll = np.asarray(log_lik, float)
-    if ll.ndim != 3:
-        raise ValueError("log_lik must be (chains, draws, observations)")
+    if ll.ndim != 3 or ll.shape[1] < 4:
+        raise ValueError("log_lik must be (chains, draws, observations) with at least 4 draws")
     lik = np.exp(ll - ll.max(axis=(0, 1), keepdims=True))
-    da = xr.DataArray(lik, dims=("chain", "draw", "obs"))
-    ess = np.asarray(az.ess(da, method="mean"), float).reshape(-1)
-    return np.asarray(ess / (ll.shape[0] * ll.shape[1]), float)
+    total = ll.shape[0] * ll.shape[1]
+    return np.array([_ess(lik[:, :, j]) / total for j in range(ll.shape[2])], float)
 
 
 def _group_sum(ll: NDArray[np.float64], groups: ArrayLike | None) -> tuple[NDArray[np.float64], NDArray[Any]]:

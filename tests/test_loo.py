@@ -90,6 +90,7 @@ def test_psis_rejects_bad_input():
 
 
 def test_psis_matches_arviz_on_eight_schools(eight_schools):
+    pytest.importorskip("arviz_stats")
     da = eight_schools.log_likelihood["obs"]
     ll = da.transpose("chain", "draw", "school").to_numpy().reshape(-1, 8)
     ref_lw, ref_k = da.azstats.psislw(r_eff=0.5, dim=["chain", "draw"])
@@ -102,6 +103,7 @@ def test_psis_matches_arviz_on_eight_schools(eight_schools):
 
 def test_psis_loo_reproduces_the_arviz_reference_for_eight_schools(eight_schools):
     """ArviZ 1.x prints elpd_loo -30.76 (SE 1.43) and p_loo 0.95 for this posterior."""
+    pytest.importorskip("arviz_stats")  # ArviZ 0.x ships different draws of this example
     ll = eight_schools.log_likelihood["obs"].to_numpy()
     r_eff = 0.241280875241094  # ArviZ's relative efficiency for this posterior, the mean ESS over draws
     result = psis_loo(ll, r_eff=r_eff)
@@ -149,12 +151,19 @@ def test_grouped_loo_sums_the_group_first():
         psis_loo(ll, groups=groups, r_eff=np.ones(6))
 
 
-def test_relative_efficiency_is_one_for_independent_draws_and_lower_for_sticky_chains():
+def test_relative_efficiency_is_one_for_independent_draws_and_follows_an_ar1_chain():
+    """For AR(1) draws with coefficient phi the integrated autocorrelation time is (1 + phi) / (1 - phi)."""
     rng = np.random.default_rng(6)
     iid = rng.normal(size=(4, 1000, 3))
     assert relative_efficiency(iid) == pytest.approx(np.ones(3), abs=0.15)
-    sticky = np.repeat(rng.normal(size=(4, 100, 3)), 10, axis=1)
-    assert np.all(relative_efficiency(sticky) < 0.3)
+    phi, n = 0.8, 20000
+    z = np.zeros((2, n))
+    noise = rng.normal(size=(2, n))
+    for t in range(1, n):
+        z[:, t] = phi * z[:, t - 1] + noise[:, t]
+    # A likelihood linear in the chain has the autocorrelation of the chain itself.
+    linear = relative_efficiency(np.log(z - z.min() + 1.0)[:, :, None])[0]
+    assert linear == pytest.approx((1 - phi) / (1 + phi), rel=0.25)
     with pytest.raises(ValueError):
         relative_efficiency(iid[0])
 
@@ -178,7 +187,7 @@ def test_stacking_puts_all_weight_on_a_dominant_model_and_matches_arviz(eight_sc
     base = rng.normal(-1, 0.2, 40)
     weights = stacking_weights({"good": base + 0.5, "bad": base})
     assert weights["good"] == pytest.approx(1.0, abs=1e-6)
-    import arviz_stats as azs
+    azs = pytest.importorskip("arviz_stats")
 
     nc = az.load_arviz_data("non_centered_eight")
     ref = azs.compare({"c": eight_schools, "nc": nc})
