@@ -115,5 +115,54 @@ The densities are on the scale of the data, so they compare models fitted to the
 fit of forecasts to later observations and do not support a causal or treatment claim. For your own forecasts, build
 `AnchorDraws` directly from draws of the mean and noise, or call `predictive_log_density`.
 
+## PSIS-LOO and stacking (TESTED)
+
+Leave-one-out cross-validation asks how well a model predicts each observation when it has not seen it. Exact
+leave-one-out needs a refit per observation. `psis_loo` instead reweights the full-data posterior draws by Pareto
+smoothed importance sampling. The method is set out by Vehtari, Gelman and Gabry (2017) and Vehtari and colleagues
+(2024).
+The implementation follows the loo R package and ArviZ, and the tests reproduce ArviZ on its eight schools example.
+
+```python
+import pandas as pd
+from symphony_dt.evaluate import fit_log_likelihood, psis_loo
+
+draws = pd.concat([pd.read_csv(f, comment="#") for f in result.csv_files], ignore_index=True)
+log_lik, obs = fit_log_likelihood(draws, split.fit)
+by_visit = psis_loo(log_lik)
+by_participant = psis_loo(log_lik, groups=obs["i"])
+print(by_participant.to_markdown())
+```
+
+`fit_log_likelihood` scores each observation under each draw with the model's own truncated or censored density.
+`psis_loo` takes any (draws, observations) log likelihood, so other models can be scored in the same way. With
+`groups`, the log likelihoods of a group are summed first, so the whole group is left out. Grouping by participant
+asks how well the population part of the model predicts a new person. Pass `r_eff`, for example from
+`relative_efficiency`, when chains are autocorrelated. It sets the length of the smoothed tail.
+
+Each unit carries a Pareto k. Above the threshold min(1 - 1 / log10(S), 0.7) for S draws, the estimate for that unit
+is unreliable, and `reliable` is false. Participant-level parameters make many observations influential. High k
+values are therefore to be expected for pd_v2, more so when whole participants are left out. Exact refits or
+leave-future-out scores are then the safer route. `k_table` counts units by band, and `n_eff` gives the effective
+sample size of the weights.
+
+Stacking combines models rather than choosing one. `stacking_weights` finds the weights of a mixture of the
+predictive distributions that maximise its summed log score, following Yao, Vehtari, Simpson and Gelman (2018).
+`pseudo_bma_weights` gives the pseudo-BMA+ weights of the same paper, stabilised by the Bayesian bootstrap.
+`loo_compare` ranks models, gives paired differences from the best with their standard errors, and adds the stacking
+weights.
+
+```python
+from symphony_dt.evaluate import loo_compare, stacking_weights
+
+print(loo_compare({"primary": loo_primary, "a01": loo_a01}))
+weights = stacking_weights({"primary": lfo_primary, "a01": lfo_a01})   # LFOScores also work
+```
+
+Each input is a `LOOResult`, an `LFOScores` or a plain array of pointwise log densities. Units are matched by name, so
+leave-future-out scores of two arms are stacked on their shared targets only. Weights describe which mixture of
+forecasts best matched the observations. They do not show that one model is the true one.
+
 The building blocks are public: `crps_ensemble`, `interval_coverage`, `fit_lmm_em`, `event_probability`,
-`auc_with_ties`, `net_benefit`, `predictive_log_density` and `bootstrap_mean`.
+`auc_with_ties`, `net_benefit`, `predictive_log_density`, `bootstrap_mean`, `psis` and
+`fit_generalized_pareto`.

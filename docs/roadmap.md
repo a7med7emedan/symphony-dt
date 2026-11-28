@@ -114,3 +114,10 @@ See [Evaluate](guide/evaluate.md).
 `leave_future_out` scores exact leave-future-out log predictive density over several anchors. It uses the model's
 own truncated or censored density and scores each target and each participant's future block. Totals by anchor and
 endpoint carry a participant-cluster standard error. See [Evaluate](guide/evaluate.md).
+
+### PSIS-LOO and stacking (DONE, not yet released)
+
+`psis_loo` estimates leave-one-out predictive density by Pareto smoothed importance sampling, per observation or
+per participant, with a Pareto k for each unit. `stacking_weights`, `pseudo_bma_weights` and `loo_compare` weigh and
+rank model arms from PSIS-LOO or leave-future-out scores. The results match ArviZ on its reference example. See
+[Evaluate](guide/evaluate.md).
